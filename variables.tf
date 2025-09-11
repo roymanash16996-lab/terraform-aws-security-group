@@ -62,29 +62,28 @@ variable "ingress_rules" {
   description = "A list of ingress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description."
   type = list(object({
     ip_protocol                  = string
-    from_port                    = number
-    to_port                      = number
+    from_port                    = optional(number, 0)
+    to_port                      = optional(number, 0)
     cidr_ipv4                    = optional(string, "0.0.0.0/0")
     cidr_ipv6                    = optional(string, "::/0")
     prefix_list_id               = optional(string, "")
     referenced_security_group_id = optional(string, "")
     description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
   }))
-  default = []
+  default = {}
 }
 
 variable "egress_rules" {
-  description = "A list of egress rules to apply to the security group. Each rule should be a map with the following keys: from_port, to_port, protocol, cidr_blocks, ipv6_cidr_blocks, prefix_list_ids, security_groups, self, description."
+  description = "A list of egress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description."
   type = list(object({
-    from_port       = number
-    to_port         = number
-    protocol        = string
-    cidr_ipv4       = optional(list(string), [])
-    cidr_ipv6       = optional(list(string), [])
-    prefix_list_id  = optional(list(string), [])
-    security_groups = optional(list(string), [])
-    self            = optional(bool, false)
-    description     = optional(string, null)
+    ip_protocol                  = string
+    from_port                    = optional(number, 0)
+    to_port                      = optional(number, 0)
+    cidr_ipv4                    = optional(string, "0.0.0.0/0")
+    cidr_ipv6                    = optional(string, "::/0")
+    prefix_list_id               = optional(string, "")
+    referenced_security_group_id = optional(string, "")
+    description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
   }))
   default = []
 }
