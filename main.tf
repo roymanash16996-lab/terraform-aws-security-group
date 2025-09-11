@@ -123,12 +123,12 @@ resource "aws_security_group" "this-name-prefix-cbd" {
 
 resource "aws_vpc_security_group_ingress_rule" "this" {
   for_each = local.create ? (
-    length(var.ingress_rules) > 0 ? var.ingress_rules : {
-      "default" = {
+    length(var.ingress_rules) > 0 ? var.ingress_rules : [
+      {
         ip_protocol = "-1"
       }
-    }
-  ) : {}
+    ]
+  ) : []
 
   security_group_id            = local.this_sg_id
   ip_protocol                  = each.value.ip_protocol
@@ -157,12 +157,12 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 
 resource "aws_vpc_security_group_egress_rule" "this" {
   for_each = local.create ? (
-    length(var.ingress_rules) > 0 ? var.ingress_rules : {
-      "default" = {
+    length(var.egress_rules) > 0 ? var.egress_rules : [
+      {
         ip_protocol = "-1"
       }
-    }
-  ) : {}
+    ]
+  ) : []
 
   security_group_id            = local.this_sg_id
   ip_protocol                  = each.value.ip_protocol
