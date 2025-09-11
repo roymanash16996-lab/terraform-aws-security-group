@@ -3,6 +3,7 @@
 
 # AWS Security Group Terraform Module
 
+
 **Created by: Manash Roy**
 
 This module provides a highly flexible and robust solution for managing AWS Security Groups and their rules using Terraform. It is designed for advanced use cases, supporting conditional resource creation, custom naming, lifecycle management, dynamic rule definitions, and tagging for traceability.
@@ -38,15 +39,22 @@ This module provides a highly flexible and robust solution for managing AWS Secu
 
 ## File Overview
 
+
 ### main.tf
 Defines all AWS resources:
+
+#### Data Sources
+- **data.aws_caller_identity.current**: Retrieves AWS account identity and ARN for tagging.
+
+#### Security Group Resources
 - **aws_security_group.this-dbc**: Security group with name, no create_before_destroy
 - **aws_security_group.this-name-prefix-dbc**: Security group with name_prefix, no create_before_destroy
 - **aws_security_group.this-cbd**: Security group with name, create_before_destroy
 - **aws_security_group.this-name-prefix-cbd**: Security group with name_prefix, create_before_destroy
+
+#### Security Group Rule Resources
 - **aws_vpc_security_group_ingress_rule.this**: Ingress rules for the security group
 - **aws_vpc_security_group_egress_rule.this**: Egress rules for the security group
-- **data.aws_caller_identity.current**: AWS account identity
 
 ### variables.tf
 Defines all input variables for configuration, rule schemas, network, and tagging.
@@ -143,11 +151,12 @@ Both `ingress_rules` and `egress_rules` are lists of objects with the following 
 
 ---
 
+
 ## Tagging
 
 All resources and rules are tagged with:
-- `CreatedBy`: Always "Terraform"
-- `Owner`: AWS caller identity ARN
+- `CreatedBy`: AWS caller identity ARN (`data.aws_caller_identity.current.arn`)
+- `Owner`: AWS account ID (`data.aws_caller_identity.current.account_id`)
 - `CreatedAt`: Timestamp of creation
 - `Name`: Security group name
 - Custom tags from `var.tags`
