@@ -23,8 +23,8 @@ resource "aws_security_group" "this-dbc" {
 
   tags = merge(
     {
-      "CreatedBy" = "Terraform"
-      "Owner"     = data.aws_caller_identity.current.arn
+      "CreatedBy" = data.aws_caller_identity.current.arn
+      "Owner"     = data.aws_caller_identity.current.account_id
       "CreatedAt" = timestamp()
       "Name"      = var.name
     },
@@ -52,8 +52,8 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 
   tags = merge(
     {
-      "CreatedBy" = "Terraform"
-      "Owner"     = data.aws_caller_identity.current.arn
+      "CreatedBy" = data.aws_caller_identity.current.arn
+      "Owner"     = data.aws_caller_identity.current.account_id
       "CreatedAt" = timestamp()
       "Name"      = var.name
     },
@@ -81,8 +81,8 @@ resource "aws_security_group" "this-cbd" {
 
   tags = merge(
     {
-      "CreatedBy" = "Terraform"
-      "Owner"     = data.aws_caller_identity.current.arn
+      "CreatedBy" = data.aws_caller_identity.current.arn
+      "Owner"     = data.aws_caller_identity.current.account_id
       "CreatedAt" = timestamp()
       "Name"      = var.name
     },
@@ -111,8 +111,8 @@ resource "aws_security_group" "this-name-prefix-cbd" {
 
   tags = merge(
     {
-      "CreatedBy" = "Terraform"
-      "Owner"     = data.aws_caller_identity.current.arn
+      "CreatedBy" = data.aws_caller_identity.current.arn
+      "Owner"     = data.aws_caller_identity.current.account_id
       "CreatedAt" = timestamp()
       "Name"      = var.name
     },
@@ -146,8 +146,8 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 
   tags = merge(
     {
-      "CreatedBy" = "Terraform"
-      "Owner"     = data.aws_caller_identity.current.arn
+      "CreatedBy" = data.aws_caller_identity.current.arn
+      "Owner"     = data.aws_caller_identity.current.account_id
       "CreatedAt" = timestamp()
     },
     var.tags,
@@ -179,8 +179,8 @@ resource "aws_vpc_security_group_egress_rule" "this" {
 
   tags = merge(
     {
-      "CreatedBy" = "Terraform"
-      "Owner"     = data.aws_caller_identity.current.arn
+      "CreatedBy" = data.aws_caller_identity.current.arn
+      "Owner"     = data.aws_caller_identity.current.account_id
       "CreatedAt" = timestamp()
     },
     var.tags,
