@@ -9,7 +9,7 @@ locals {
     var.security_group_id
   )
 
-  vpc_id = data.aws_vpc.this.id
+  vpc_id = var.vpc_name == "" ? data.aws_vpc.default[0].id : data.aws_vpc.provided-vpc[0].id
 
   region = var.region != "" ? var.region : data.aws_region.default[0].name
 }
