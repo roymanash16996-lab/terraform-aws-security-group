@@ -132,13 +132,13 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 
   security_group_id            = local.this_sg_id
   ip_protocol                  = each.value.ip_protocol
-  from_port                    = lookup(each.value, from_port, 0)
-  to_port                      = lookup(each.value, to_port, 0)
-  cidr_ipv4                    = lookup(each.value, cidr_ipv4, "0.0.0.0/0")
-  cidr_ipv6                    = lookup(each.value, cidr_ipv6, "::/0")
-  prefix_list_id               = lookup(each.value, prefix_list_id, "")
-  referenced_security_group_id = lookup(each.value, referenced_security_group_id, "")
-  description                  = lookup(each.value, description, "Default ingress rule to allow all traffic within the security group")
+  from_port                    = lookup(each.value, "from_port", 0)
+  to_port                      = lookup(each.value, "to_port", 0)
+  cidr_ipv4                    = lookup(each.value, "cidr_ipv4", "0.0.0.0/0")
+  cidr_ipv6                    = lookup(each.value, "cidr_ipv6", "::/0")
+  prefix_list_id               = lookup(each.value, "prefix_list_id", "")
+  referenced_security_group_id = lookup(each.value, "referenced_security_group_id", "")
+  description                  = lookup(each.value, "description", "Default ingress rule to allow all traffic within the security group")
   region                       = local.region
 
   tags = merge(
@@ -166,13 +166,13 @@ resource "aws_vpc_security_group_egress_rule" "this" {
 
   security_group_id            = local.this_sg_id
   ip_protocol                  = each.value.ip_protocol
-  from_port                    = lookup(each.value, from_port, 0)
-  to_port                      = lookup(each.value, to_port, 0)
-  cidr_ipv4                    = lookup(each.value, cidr_ipv4, "0.0.0.0/0")
-  cidr_ipv6                    = lookup(each.value, cidr_ipv6, "::/0")
-  prefix_list_id               = lookup(each.value, prefix_list_id, "")
-  referenced_security_group_id = lookup(each.value, referenced_security_group_id, "")
-  description                  = lookup(each.value, description, "Default ingress rule to allow all traffic within the security group")
+  from_port                    = lookup(each.value, "from_port", 0)
+  to_port                      = lookup(each.value, "to_port", 0)
+  cidr_ipv4                    = lookup(each.value, "cidr_ipv4", "0.0.0.0/0")
+  cidr_ipv6                    = lookup(each.value, "cidr_ipv6", "::/0")
+  prefix_list_id               = lookup(each.value, "prefix_list_id", "")
+  referenced_security_group_id = lookup(each.value, "referenced_security_group_id", "")
+  description                  = lookup(each.value, "description", "Default ingress rule to allow all traffic within the security group")
   region                       = local.region
 
   tags = merge(
