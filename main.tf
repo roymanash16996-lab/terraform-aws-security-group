@@ -26,6 +26,7 @@ resource "aws_security_group" "this-dbc" {
       "CreatedBy" = "Terraform"
       "Owner"     = data.aws_caller_identity.current.arn
       "CreatedAt" = timestamp()
+      "Name"      = var.name
     },
     var.tags,
   )
@@ -54,6 +55,7 @@ resource "aws_security_group" "this-name-prefix-dbc" {
       "CreatedBy" = "Terraform"
       "Owner"     = data.aws_caller_identity.current.arn
       "CreatedAt" = timestamp()
+      "Name"      = var.name
     },
     var.tags,
   )
@@ -82,6 +84,7 @@ resource "aws_security_group" "this-cbd" {
       "CreatedBy" = "Terraform"
       "Owner"     = data.aws_caller_identity.current.arn
       "CreatedAt" = timestamp()
+      "Name"      = var.name
     },
     var.tags,
   )
@@ -111,6 +114,7 @@ resource "aws_security_group" "this-name-prefix-cbd" {
       "CreatedBy" = "Terraform"
       "Owner"     = data.aws_caller_identity.current.arn
       "CreatedAt" = timestamp()
+      "Name"      = var.name
     },
     var.tags,
   )
