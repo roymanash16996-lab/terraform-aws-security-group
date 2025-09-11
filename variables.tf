@@ -59,7 +59,22 @@ variable "security_group_id" {
 #################################################################
 
 variable "ingress_rules" {
-  description = "A list of ingress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description."
+  /*
+   * A list of ingress rules to apply to the security group.
+   * Each rule should be a map with the following keys:
+   * - ip_protocol: The protocol to allow (e.g., "tcp", "udp", "icmp", "-1" for all).
+   * - from_port: The starting port for the rule.
+   * - to_port: The ending port for the rule.
+   * - cidr_ipv4: (Optional) The IPv4 CIDR block to allow. Mutually exclusive with cidr_ipv6, prefix_list_id, and referenced_security_group_id.
+   * - cidr_ipv6: (Optional) The IPv6 CIDR block to allow. Mutually exclusive with cidr_ipv4, prefix_list_id, and referenced_security_group_id.
+   * - prefix_list_id: (Optional) The ID of an AWS prefix list to allow. Mutually exclusive with cidr_ipv4, cidr_ipv6, and referenced_security_group_id.
+   * - referenced_security_group_id: (Optional) The ID of a referenced security group to allow. Mutually exclusive with cidr_ipv4, cidr_ipv6, and prefix_list_id.
+   * - description: (Optional) A description for the rule.
+   *
+   * By default, allows all inbound traffic. To restrict inbound traffic, provide specific rules.
+   * To remove all inbound traffic, provide an empty list.
+   */
+  description = "A list of ingress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description. For each rule, provide only one of the following mutually exclusive attributes: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. By default, allows all inbound traffic. If you want to restrict inbound traffic, provide specific rules. If you want to remove all inbound traffic, provide an empty list."
   type = list(object({
     ip_protocol                  = string
     from_port                    = optional(number, 0)
@@ -74,7 +89,22 @@ variable "ingress_rules" {
 }
 
 variable "egress_rules" {
-  description = "A list of egress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description."
+  /*
+   * A list of egress rules to apply to the security group.
+   * Each rule should be a map with the following keys:
+   * - ip_protocol: The protocol to allow (e.g., "tcp", "udp", "icmp", "-1" for all).
+   * - from_port: The starting port for the rule.
+   * - to_port: The ending port for the rule.
+   * - cidr_ipv4: (Optional) The IPv4 CIDR block to allow. Mutually exclusive with cidr_ipv6, prefix_list_id, and referenced_security_group_id.
+   * - cidr_ipv6: (Optional) The IPv6 CIDR block to allow. Mutually exclusive with cidr_ipv4, prefix_list_id, and referenced_security_group_id.
+   * - prefix_list_id: (Optional) The ID of an AWS prefix list to allow. Mutually exclusive with cidr_ipv4, cidr_ipv6, and referenced_security_group_id.
+   * - referenced_security_group_id: (Optional) The ID of a referenced security group to allow. Mutually exclusive with cidr_ipv4, cidr_ipv6, and prefix_list_id.
+   * - description: (Optional) A description for the rule.
+   *
+   * By default, allows all outbound traffic. To restrict outbound traffic, provide specific rules.
+   * To remove all outbound traffic, provide an empty list.
+   */
+  description = "A list of egress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description. For each rule, provide only one of the following mutually exclusive attributes: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. By default, allows all outbound traffic. If you want to restrict outbound traffic, provide specific rules. If you want to remove all outbound traffic, provide an empty list."
   type = list(object({
     ip_protocol                  = string
     from_port                    = optional(number, 0)

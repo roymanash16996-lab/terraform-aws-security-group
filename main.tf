@@ -126,16 +126,9 @@ resource "aws_security_group" "this-name-prefix-cbd" {
 #################################################################
 
 resource "aws_vpc_security_group_ingress_rule" "this" {
-  for_each = local.create ? (
-    length(var.ingress_rules) > 0 ? zipmap(
-      [for idx in range(length(var.ingress_rules)) : tostring(idx)], 
-      var.ingress_rules
-    ) : {
-      "default" = {
-        ip_protocol = "-1"
-        cidr_ipv4   = "0.0.0.0/0"
-      }
-    }
+  for_each = local.create && length(var.ingress_rules) > 0 ? zipmap(
+    [for idx in range(length(var.ingress_rules)) : tostring(idx)], 
+    var.ingress_rules
   ) : {}
 
   security_group_id            = local.this_sg_id
@@ -166,16 +159,9 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 #################################################################
 
 resource "aws_vpc_security_group_egress_rule" "this" {
-  for_each = local.create ? (
-    length(var.egress_rules) > 0 ? zipmap(
-      [for idx in range(length(var.egress_rules)) : tostring(idx)],
-      var.egress_rules
-    ) : {
-      "default" = {
-        ip_protocol = "-1"
-        cidr_ipv4   = "0.0.0.0/0"
-      }
-    }
+  for_each = local.create && length(var.egress_rules) > 0 ? zipmap(
+    [for idx in range(length(var.egress_rules)) : tostring(idx)],
+    var.egress_rules
   ) : {}
 
   security_group_id = local.this_sg_id
