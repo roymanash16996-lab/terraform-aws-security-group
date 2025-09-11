@@ -70,7 +70,7 @@ variable "ingress_rules" {
     referenced_security_group_id = optional(string, "")
     description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
   }))
-  default = {}
+  default = []
 }
 
 variable "egress_rules" {
