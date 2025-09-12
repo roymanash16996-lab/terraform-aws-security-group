@@ -137,25 +137,66 @@ module "security_group" {
 
 ---
 
-
-
 ## Variables
 
 | variable_name              | description                                                                                           | optional | required | type         |
 |----------------------------|-------------------------------------------------------------------------------------------------------|----------|---------|--------------|
-| create_before_destroy      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Yes      | No      | bool         |
-| use_name_prefix            | Use name_prefix for auto-generated SG names.                                                          | Yes      | No      | bool         |
-| name                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Yes      | No      | string       |
-| description                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Yes      | No      | string       |
-| revoke_rules_on_delete     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Yes      | No      | bool         |
-| security_group_id          | ID of an existing SG to use. If provided, no new SG is created.                                       | Yes      | No      | string       |
-| ingress_rules              | List of ingress rule objects. See Rule Schema below.                                                  | Yes      | No      | list(object) |
-| egress_rules               | List of egress rule objects. See Rule Schema below.                                                   | Yes      | No      | list(object) |
-| region                     | AWS region for deployment. Default is provider region.                                                | Yes      | No      | string       |
-| vpc_name                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Yes      | No      | string       |
-| subnet_type                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Yes      | No      | string       |
-| availability_zone          | Availability zone for the instance. Default is first AZ of selected VPC.                             | Yes      | No      | string       |
-| tags                       | Map of custom tags to assign to the security group.                                                  | Yes      | No      | map(string)  |
+| [create_before_destroy](#create_before_destroy)      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Yes      | No      | bool         |
+| [use_name_prefix](#use_name_prefix)            | Use name_prefix for auto-generated SG names.                                                          | Yes      | No      | bool         |
+| [name](#name)                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Yes      | No      | string       |
+| [description](#description)                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Yes      | No      | string       |
+| [revoke_rules_on_delete](#revoke_rules_on_delete)     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Yes      | No      | bool         |
+| [security_group_id](#security_group_id)          | ID of an existing SG to use. If provided, no new SG is created.                                       | Yes      | No      | string       |
+| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below.                                                  | Yes      | No      | list(object) |
+| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below.                                                   | Yes      | No      | list(object) |
+| [region](#region)                     | AWS region for deployment. Default is provider region.                                                | Yes      | No      | string       |
+| [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Yes      | No      | string       |
+| [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Yes      | No      | string       |
+| [availability_zone](#availability_zone)          | Availability zone for the instance. Default is first AZ of selected VPC.                             | Yes      | No      | string       |
+| [tags](#tags)                       | Map of custom tags to assign to the security group.                                                  | Yes      | No      | map(string)  |
+
+---
+
+### Variable Descriptions
+
+#### create_before_destroy
+Enable create_before_destroy lifecycle policy for zero-downtime replacement of the security group. Set to true to ensure a new security group is created before the old one is destroyed.
+
+#### use_name_prefix
+If true, uses a name prefix for the security group instead of a fixed name. Useful for auto-generating unique names.
+
+#### name
+The name of the security group. If omitted, Terraform will assign a random name.
+
+#### description
+Description of the security group. Defaults to 'Security Group managed by Terraform'.
+
+#### revoke_rules_on_delete
+If true, all rules will be revoked when the security group is deleted. Defaults to true for safety.
+
+#### security_group_id
+ID of an existing security group to use. If provided, no new security group will be created and rules will be attached to this group.
+
+#### ingress_rules
+List of ingress rule objects. Each object defines a rule for incoming traffic. See Rule Schema below for details.
+
+#### egress_rules
+List of egress rule objects. Each object defines a rule for outgoing traffic. See Rule Schema below for details.
+
+#### region
+AWS region for deployment. If not specified, uses the provider's default region.
+
+#### vpc_name
+Name of the VPC where the security group will be deployed. If not provided, the default VPC is used.
+
+#### subnet_type
+Type of subnet for the instance. Options are 'public', 'private-with-nat', or 'private-isolated'.
+
+#### availability_zone
+Availability zone for the instance. Defaults to the first AZ of the selected VPC.
+
+#### tags
+Map of custom tags to assign to the security group and its rules. Useful for organization and cost allocation.
 
 
 ---
@@ -181,9 +222,10 @@ Both `ingress_rules` and `egress_rules` are lists of objects with the following 
 
 ## Lifecycle and Conditional Creation
 
-- Security group resources are only created if `local.create` and `var.create_security_group` are true.
-- The resource variant is selected based on `use_name_prefix` and `create_before_destroy`.
+- Security group resources are created only if `security_group_id` is not provided.
+- The resource variant (`this-dbc`, `this-name-prefix-dbc`, `this-cbd`, `this-name-prefix-cbd`) is selected based on the values of `use_name_prefix` and `create_before_destroy`.
 - If `security_group_id` is provided, no new security group is created; rules are attached to the existing group.
+- Security group rule resources are created for each item in `ingress_rules` and `egress_rules` only when the corresponding list is non-empty and a security group ID is available.
 
 ---
 
@@ -199,58 +241,13 @@ All resources and rules are tagged with:
 
 ---
 
-## Example Usage
-```hcl
-module "security_group" {
-  source = "git::https://github.com/roymanash16996-lab/terraform-aws-security-group.git?ref=<commit-hash>"
-
-  name                  = "my-sg"
-  description           = "My security group"
-  vpc_name              = "my-vpc"
-  create_security_group = true
-  use_name_prefix       = false
-  create_before_destroy = true
-
-  ingress_rules = [
-    {
-      ip_protocol = "tcp"
-      from_port   = 22
-      to_port     = 22
-      cidr_ipv4   = "0.0.0.0/0"
-      description = "Allow SSH"
-    },
-    {
-      ip_protocol = "tcp"
-      from_port   = 80
-      to_port     = 80
-      cidr_ipv4   = "0.0.0.0/0"
-      description = "Allow HTTP"
-    }
-  ]
-
-  egress_rules = [
-    {
-      ip_protocol = "-1"
-      description = "Allow all outbound traffic"
-    }
-  ]
-
-  tags = {
-    Environment = "dev"
-    Owner       = "your-name"
-  }
-}
-```
-
----
-
-## Resources
-...existing code...
-## Variables
-...existing code...
 ## Outputs
-...existing code...
-## Outputs
+
+| output_name           | description                                 | type    |
+|-----------------------|---------------------------------------------|---------|
+| security_group_id     | The ID of the created or referenced security group                | string  |
+| security_group_arn    | The ARN of the created security group               | string  |
+| security_group_name   | The name of the created security group              | string  |
 
 | output_name           | description                                 | type    |
 |-----------------------|---------------------------------------------|---------|
