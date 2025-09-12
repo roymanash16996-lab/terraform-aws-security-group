@@ -13,12 +13,12 @@ This module provides a highly flexible and robust solution for managing AWS Secu
 ## Table of Contents
 - [Features](#features)
 - [File Overview](#file-overview)
-- [Resource Logic](#resource-logic)
-- [Variable Reference](#variable-reference)
+- [Example Usage](#example-usage)
+- [Resources](#resources)
+- [Variables](#variables)
 - [Rule Schema](#rule-schema)
 - [Lifecycle and Conditional Creation](#lifecycle-and-conditional-creation)
 - [Tagging](#tagging)
-- [Example Usage](#example-usage)
 - [Outputs](#outputs)
 - [Requirements](#requirements)
 - [Troubleshooting](#troubleshooting)
@@ -74,32 +74,75 @@ Specifies Terraform and AWS provider version requirements.
 ---
 
 
-## Resources
+## Example Usage
+```hcl
+module "security_group" {
+  source = "git::https://github.com/roymanash16996-lab/terraform-aws-security-group.git?ref=<commit-hash>"
 
-### Security Group Resources
-- **aws_security_group.this-dbc**: Created when using a fixed name and no create_before_destroy lifecycle.
-- **aws_security_group.this-name-prefix-dbc**: Created when using a name prefix and no create_before_destroy lifecycle.
-- **aws_security_group.this-cbd**: Created when using a fixed name and create_before_destroy lifecycle.
-- **aws_security_group.this-name-prefix-cbd**: Created when using a name prefix and create_before_destroy lifecycle.
+  name                  = "my-sg"
+  description           = "My security group"
+  vpc_name              = "my-vpc"
+  create_security_group = true
+  use_name_prefix       = false
+  create_before_destroy = true
+
+  ingress_rules = [
+    {
+      ip_protocol = "tcp"
+      from_port   = 22
+      to_port     = 22
+      cidr_ipv4   = "0.0.0.0/0"
+      description = "Allow SSH"
+    },
+    {
+      ip_protocol = "tcp"
+      from_port   = 80
+      to_port     = 80
+      cidr_ipv4   = "0.0.0.0/0"
+      description = "Allow HTTP"
+    }
+  ]
+
+  egress_rules = [
+    {
+      ip_protocol = "-1"
+      description = "Allow all outbound traffic"
+    }
+  ]
+
+  tags = {
+    Environment = "dev"
+    Owner       = "your-name"
+  }
+}
+```
+
+---
+
+## Resources
+...existing code...
+- **aws_security_group.this-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is false.
+- **aws_security_group.this-name-prefix-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is false.
+- **aws_security_group.this-cbd**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is true.
+- **aws_security_group.this-name-prefix-cbd**: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is true.
 
 ### Security Group Rule Resources
-- **aws_vpc_security_group_ingress_rule.this**: Manages ingress rules for the security group, created for each item in `var.ingress_rules`.
-- **aws_vpc_security_group_egress_rule.this**: Manages egress rules for the security group, created for each item in `var.egress_rules`.
+- **aws_vpc_security_group_ingress_rule.this**: Created for each item in `var.ingress_rules` when `local.this_sg_id` is set and the list is non-empty. Uses for_each to attach rules to the selected security group.
+- **aws_vpc_security_group_egress_rule.this**: Created for each item in `var.egress_rules` when `local.this_sg_id` is set and the list is non-empty. Uses for_each to attach rules to the selected security group.
 
 ### Data Sources
-- **data.aws_caller_identity.current**: Retrieves AWS account identity for tagging.
+- **data.aws_caller_identity.current**: Always created. Used for tagging all resources with AWS account and user info.
 
 ---
 
 ---
+
 
 
 ## Variables
 
 | variable_name              | description                                                                                           | optional | required | type         |
 |----------------------------|-------------------------------------------------------------------------------------------------------|----------|---------|--------------|
-| create                     | Flag to create the security group or rules. If false, assumes SG is managed outside this module.      | Yes      | No      | bool         |
-| create_security_group      | Flag to create the security group. If false, assumes SG is managed outside this module.               | Yes      | No      | bool         |
 | create_before_destroy      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Yes      | No      | bool         |
 | use_name_prefix            | Use name_prefix for auto-generated SG names.                                                          | Yes      | No      | bool         |
 | name                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Yes      | No      | string       |
@@ -159,7 +202,7 @@ All resources and rules are tagged with:
 ## Example Usage
 ```hcl
 module "security_group" {
-  source = "./Registry/Security-Group"
+  source = "git::https://github.com/roymanash16996-lab/terraform-aws-security-group.git?ref=<commit-hash>"
 
   name                  = "my-sg"
   description           = "My security group"
@@ -201,14 +244,19 @@ module "security_group" {
 
 ---
 
-
+## Resources
+...existing code...
+## Variables
+...existing code...
+## Outputs
+...existing code...
 ## Outputs
 
 | output_name           | description                                 | type    |
 |-----------------------|---------------------------------------------|---------|
-| security_group_id     | The ID of the security group                | string  |
-| security_group_arn    | The ARN of the security group               | string  |
-| security_group_name   | The name of the security group              | string  |
+| security_group_id     | The ID of the created or referenced security group                | string  |
+| security_group_arn    | The ARN of the created security group               | string  |
+| security_group_name   | The name of the created security group              | string  |
 
 ---
 

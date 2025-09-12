@@ -2,31 +2,6 @@
 # Creation Configurations
 #################################################################
 
-
-# -----------------------------------------------------------------------------
-# Variable: create
-# Purpose: Master flag to enable/disable all resources in the module.
-# Use Case: Set to false when you want to reference an externally managed security group and only manage rules.
-# -----------------------------------------------------------------------------
-variable "create" {
-  description = "Flag to create the security group or security group rules. If false, assumes the security group is managed outside of this module."
-  type        = bool
-  default     = true
-}
-
-
-# -----------------------------------------------------------------------------
-# Variable: create_security_group
-# Purpose: Controls whether a new security group is created by this module.
-# Use Case: Set to false to attach rules to an existing security group (e.g., for shared infrastructure).
-# -----------------------------------------------------------------------------
-variable "create_security_group" {
-  description = "Flag to create the security group. If false, assumes the security group is managed outside of this module."
-  type        = bool
-  default     = true
-}
-
-
 # -----------------------------------------------------------------------------
 # Variable: create_before_destroy
 # Purpose: Enables zero-downtime replacement of security groups.

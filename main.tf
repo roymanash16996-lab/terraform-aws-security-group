@@ -5,8 +5,8 @@
 ################################################################################
 # Data Source: aws_caller_identity
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity
-# Reason: Retrieves AWS account and user information for tagging and traceability.
-# Use Case: Used to tag all resources with the identity of the user/account running Terraform, enabling auditability and ownership tracking in multi-account environments.
+# When: Always created. Used for tagging all resources with AWS account and user info.
+# How: Instantiated as a data source, no arguments required.
 ################################################################################
 data "aws_caller_identity" "current" {}
 
@@ -15,16 +15,16 @@ data "aws_caller_identity" "current" {}
 #################################################################
 
 
-# =============================================================================
+#================================================================================
 # Resource: aws_security_group.this-dbc
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# Reason: Creates a security group with a fixed name when create_before_destroy is not required.
-# Use Case: Use when you need a predictable, static security group name for integration with other resources or external systems, and downtime during replacement is acceptable.
-# Example: Integrating with legacy systems or scripts that expect a specific security group name.
-# =============================================================================
+# When: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is false.
+# How: Resource is instantiated with a fixed name from `var.name`. Lifecycle does not use create_before_destroy.
+# Example: Used for legacy systems needing a static SG name, and downtime is acceptable during replacement.
+#================================================================================
 resource "aws_security_group" "this-dbc" {
 
-  count = local.create && var.create_security_group && !var.use_name_prefix && !var.create_before_destroy ? 1 : 0
+  count = !var.security_group_id && !var.use_name_prefix && !var.create_before_destroy ? 1 : 0
 
   name                   = var.name
   description            = var.description
@@ -52,16 +52,16 @@ resource "aws_security_group" "this-dbc" {
 #################################################################
 
 
-# =============================================================================
+#================================================================================
 # Resource: aws_security_group.this-name-prefix-dbc
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# Reason: Creates a security group with a name prefix for auto-generated names when create_before_destroy is not required.
-# Use Case: Use when you want Terraform to generate unique security group names for each deployment, avoiding naming collisions in shared or multi-tenant environments.
-# Example: Deploying multiple environments (dev, staging, prod) in the same AWS account.
-# =============================================================================
+# When: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is false.
+# How: Resource is instantiated with a name prefix from `var.name`. Lifecycle does not use create_before_destroy.
+# Example: Used for multi-environment deployments to avoid naming collisions.
+#================================================================================
 resource "aws_security_group" "this-name-prefix-dbc" {
 
-  count = local.create && var.create_security_group && var.use_name_prefix && !var.create_before_destroy ? 1 : 0
+  count = !var.security_group_id && var.use_name_prefix && !var.create_before_destroy ? 1 : 0
 
   name_prefix            = "${var.name}-"
   description            = var.description
@@ -89,16 +89,16 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 #################################################################
 
 
-# =============================================================================
+#================================================================================
 # Resource: aws_security_group.this-cbd
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# Reason: Creates a security group with a fixed name and enables create_before_destroy for zero-downtime replacement.
-# Use Case: Use when you require a static security group name and need to avoid downtime during updates (e.g., production workloads with high availability requirements).
-# Example: Rolling out security group changes in a blue/green deployment scenario.
-# =============================================================================
+# When: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is true.
+# How: Resource is instantiated with a fixed name from `var.name`. Lifecycle uses create_before_destroy for zero-downtime replacement.
+# Example: Used for production workloads requiring high availability and no downtime during SG updates.
+#================================================================================
 resource "aws_security_group" "this-cbd" {
 
-  count = local.create && var.create_security_group && !var.use_name_prefix && var.create_before_destroy ? 1 : 0
+  count = !var.security_group_id && !var.use_name_prefix && var.create_before_destroy ? 1 : 0
 
   name                   = var.name
   description            = var.description
@@ -127,16 +127,16 @@ resource "aws_security_group" "this-cbd" {
 #################################################################
 
 
-# =============================================================================
+#================================================================================
 # Resource: aws_security_group.this-name-prefix-cbd
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# Reason: Creates a security group with a name prefix and enables create_before_destroy for zero-downtime replacement.
-# Use Case: Use when you want unique, auto-generated security group names and require zero-downtime updates, suitable for CI/CD pipelines and ephemeral environments.
-# Example: Automated deployments for feature branches or short-lived test environments.
-# =============================================================================
+# When: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is true.
+# How: Resource is instantiated with a name prefix from `var.name`. Lifecycle uses create_before_destroy for zero-downtime replacement.
+# Example: Used for CI/CD pipelines, ephemeral environments, or feature branch deployments.
+#================================================================================
 resource "aws_security_group" "this-name-prefix-cbd" {
 
-  count = local.create && var.create_security_group && var.use_name_prefix && var.create_before_destroy ? 1 : 0
+  count = !var.security_group_id && var.use_name_prefix && var.create_before_destroy ? 1 : 0
 
   name_prefix            = "${var.name}-"
   description            = var.description
@@ -165,15 +165,15 @@ resource "aws_security_group" "this-name-prefix-cbd" {
 #################################################################
 
 
-# =============================================================================
+#================================================================================
 # Resource: aws_vpc_security_group_ingress_rule.this
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule
-# Reason: Manages individual ingress rules for the security group, allowing fine-grained control over inbound traffic.
-# Use Case: Use to define granular inbound access policies, such as allowing only specific ports, protocols, or source CIDRs/security groups. Supports dynamic rule sets for microservices or multi-tier architectures.
-# Example: Allowing SSH from a specific IP, or HTTP from a load balancer security group.
-# =============================================================================
+# When: Created for each item in `var.ingress_rules` when `local.this_sg_id` is set and the list is non-empty.
+# How: Uses for_each to create a rule for each ingress object. Attaches to the selected security group.
+# Example: Allowing SSH from a specific IP, HTTP from a load balancer, or custom rules for microservices.
+#================================================================================
 resource "aws_vpc_security_group_ingress_rule" "this" {
-  for_each = local.create && length(var.ingress_rules) > 0 ? zipmap(
+  for_each = local.this_sg_id && length(var.ingress_rules) > 0 ? zipmap(
     [for idx in range(length(var.ingress_rules)) : tostring(idx)], 
     var.ingress_rules
   ) : {}
@@ -206,15 +206,15 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 #################################################################
 
 
-# =============================================================================
+#================================================================================
 # Resource: aws_vpc_security_group_egress_rule.this
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule
-# Reason: Manages individual egress rules for the security group, allowing fine-grained control over outbound traffic.
-# Use Case: Use to restrict or allow outbound traffic from resources, such as limiting access to specific services, networks, or compliance boundaries.
-# Example: Allowing outbound traffic only to a specific database subnet or external API endpoint.
-# =============================================================================
+# When: Created for each item in `var.egress_rules` when `local.this_sg_id` is set and the list is non-empty.
+# How: Uses for_each to create a rule for each egress object. Attaches to the selected security group.
+# Example: Restricting outbound traffic to a database subnet, or allowing only specific external API endpoints.
+#================================================================================
 resource "aws_vpc_security_group_egress_rule" "this" {
-  for_each = local.create && length(var.egress_rules) > 0 ? zipmap(
+  for_each = local.this_sg_id && length(var.egress_rules) > 0 ? zipmap(
     [for idx in range(length(var.egress_rules)) : tostring(idx)],
     var.egress_rules
   ) : {}

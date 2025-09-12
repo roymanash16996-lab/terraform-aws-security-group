@@ -4,26 +4,24 @@
 # Use Case: Centralizes logic for resource selection and configuration, improving maintainability and readability.
 ################################################################################
 locals {
-  # Master flag to enable/disable all resources in the module
-  create = var.create
 
   # Selects the correct security group ID based on creation flags and user input
   # Use Case: Ensures the correct security group is referenced for rule attachment, whether created by this module or provided externally.
   this_sg_id = coalesce(
-    var.create_security_group && var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-name-prefix-cbd[0].id : null,
-    var.create_security_group && var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-name-prefix-dbc[0].id : null,
-    var.create_security_group && !var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-cbd[0].id : null,
-    var.create_security_group && !var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-dbc[0].id : null,
+    !var.security_group_id && var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-name-prefix-cbd[0].id : null,
+    !var.security_group_id && var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-name-prefix-dbc[0].id : null,
+    !var.security_group_id && !var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-cbd[0].id : null,
+    !var.security_group_id && !var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-dbc[0].id : null,
     var.security_group_id
   )
 
   # Selects the created security group object for output and tagging
   # Use Case: Provides access to the full security group resource for outputs and advanced referencing.
-  created_security_group = var.create_security_group ? coalesce(
-    var.create_security_group && var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-name-prefix-cbd[0] : null,
-    var.create_security_group && var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-name-prefix-dbc[0] : null,
-    var.create_security_group && !var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-cbd[0] : null,
-    var.create_security_group && !var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-dbc[0] : null
+  created_security_group = !var.security_group_id ? coalesce(
+    !var.security_group_id && var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-name-prefix-cbd[0] : null,
+    !var.security_group_id && var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-name-prefix-dbc[0] : null,
+    !var.security_group_id && !var.use_name_prefix && var.create_before_destroy ? aws_security_group.this-cbd[0] : null,
+    !var.security_group_id && !var.use_name_prefix && !var.create_before_destroy ? aws_security_group.this-dbc[0] : null
   ) : null
 
   # Determines the VPC ID to use for security group creation
