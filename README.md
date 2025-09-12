@@ -11,18 +11,18 @@ This module provides a highly flexible and robust solution for managing AWS Secu
 ---
 
 ## Table of Contents
-- [Features](#features)
-- [File Overview](#file-overview)
-- [Example Usage](#example-usage)
-- [Resources](#resources)
-- [Variables](#variables)
-- [Rule Schema](#rule-schema)
-- [Lifecycle and Conditional Creation](#lifecycle-and-conditional-creation)
-- [Tagging](#tagging)
-- [Outputs](#outputs)
-- [Requirements](#requirements)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+ [Features](#features)
+ [File Overview](#file-overview)
+ [Example Usage](#example-usage)
+ [Requirements](#requirements)
+ [Resources](#resources)
+ [Variables](#variables)
+ [Rule Schema](#rule-schema)
+ [Lifecycle and Conditional Creation](#lifecycle-and-conditional-creation)
+ [Tagging](#tagging)
+ [Outputs](#outputs)
+ [Troubleshooting](#troubleshooting)
+ [License](#license)
 
 ---
 
@@ -119,6 +119,13 @@ module "security_group" {
 
 ---
 
+## Requirements
+
+- Terraform >= 1.5.7
+- AWS Provider >= 6.12.0
+
+---
+
 ## Resources
 ...existing code...
 - **aws_security_group.this-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is false.
@@ -147,8 +154,8 @@ module "security_group" {
 | [description](#description)                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Optional  | string       |
 | [revoke_rules_on_delete](#revoke_rules_on_delete)     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Optional  | bool         |
 | [security_group_id](#security_group_id)          | ID of an existing SG to use. If provided, no new SG is created.                                       | Optional  | string       |
-| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below.                                                  | Required  | list(object) |
-| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below.                                                   | Required  | list(object) |
+| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below.                                                  | Optional  | list(object) |
+| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below.                                                   | Optional  | list(object) |
 | [region](#region)                     | AWS region for deployment. Default is provider region.                                                | Optional  | string       |
 | [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Optional  | string       |
 | [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Optional  | string       |
@@ -177,11 +184,14 @@ If true, all rules will be revoked when the security group is deleted. Defaults 
 #### security_group_id
 ID of an existing security group to use. If provided, no new security group will be created and rules will be attached to this group.
 
+
 #### ingress_rules
 List of ingress rule objects. Each object defines a rule for incoming traffic. See Rule Schema below for details.
+If not provided or left empty, no ingress rules will be created for the security group, and the group will not allow any inbound traffic by default.
 
 #### egress_rules
 List of egress rule objects. Each object defines a rule for outgoing traffic. See Rule Schema below for details.
+If not provided or left empty, no egress rules will be created for the security group, and the group will not allow any outbound traffic by default.
 
 #### region
 AWS region for deployment. If not specified, uses the provider's default region.
@@ -254,13 +264,6 @@ All resources and rules are tagged with:
 | security_group_id     | The ID of the created or referenced security group                | string  |
 | security_group_arn    | The ARN of the created security group               | string  |
 | security_group_name   | The name of the created security group              | string  |
-
----
-
-## Requirements
-
-- Terraform >= 1.5.7
-- AWS Provider >= 6.12.0
 
 ---
 
