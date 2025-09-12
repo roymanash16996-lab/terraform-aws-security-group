@@ -2,18 +2,36 @@
 # Creation Configurations
 #################################################################
 
+
+# -----------------------------------------------------------------------------
+# Variable: create
+# Purpose: Master flag to enable/disable all resources in the module.
+# Use Case: Set to false when you want to reference an externally managed security group and only manage rules.
+# -----------------------------------------------------------------------------
 variable "create" {
   description = "Flag to create the security group or security group rules. If false, assumes the security group is managed outside of this module."
   type        = bool
   default     = true
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: create_security_group
+# Purpose: Controls whether a new security group is created by this module.
+# Use Case: Set to false to attach rules to an existing security group (e.g., for shared infrastructure).
+# -----------------------------------------------------------------------------
 variable "create_security_group" {
   description = "Flag to create the security group. If false, assumes the security group is managed outside of this module."
   type        = bool
   default     = true
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: create_before_destroy
+# Purpose: Enables zero-downtime replacement of security groups.
+# Use Case: Set to true for production or critical workloads where downtime is unacceptable during updates.
+# -----------------------------------------------------------------------------
 variable "create_before_destroy" {
   description = "Flag to enable create_before_destroy lifecycle policy on the security group. Useful when you want to replace the security group without downtime."
   type        = bool
@@ -24,30 +42,60 @@ variable "create_before_destroy" {
 # Security Group Configurations
 #################################################################
 
+
+# -----------------------------------------------------------------------------
+# Variable: use_name_prefix
+# Purpose: Determines whether to use a name prefix for auto-generated security group names.
+# Use Case: Set to true for multi-environment deployments to avoid naming collisions.
+# -----------------------------------------------------------------------------
 variable "use_name_prefix" {
   description = "Flag to use name_prefix instead of name for the security group. If true, the security group name will be auto-generated with the provided prefix."
   type        = bool
   default     = false
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: name
+# Purpose: Sets the name of the security group.
+# Use Case: Use for integration with systems that require a specific security group name.
+# -----------------------------------------------------------------------------
 variable "name" {
   description = "The name of the security group. If omitted, Terraform will assign a random, unique name."
   type        = string
   default     = null
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: description
+# Purpose: Sets the description for the security group.
+# Use Case: Use to provide context or compliance information for the security group.
+# -----------------------------------------------------------------------------
 variable "description" {
   description = "The description of the security group. Defaults to 'Security Group managed by Terraform'."
   type        = string
   default     = "Security Group managed by Terraform"
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: revoke_rules_on_delete
+# Purpose: Ensures all rules are revoked when the security group is deleted.
+# Use Case: Set to true for security best practices and compliance.
+# -----------------------------------------------------------------------------
 variable "revoke_rules_on_delete" {
   description = "Flag to revoke all rules when the security group is deleted. Defaults to true."
   type        = bool
   default     = true
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: security_group_id
+# Purpose: Allows use of an externally managed security group.
+# Use Case: Provide when you want to manage rules for a security group created outside this module.
+# -----------------------------------------------------------------------------
 variable "security_group_id" {
   description = "The ID of an existing security group to use. If provided, the module will not create a new security group."
   type        = string
@@ -58,6 +106,13 @@ variable "security_group_id" {
 # Security Group Rules Configurations
 #################################################################
 
+
+# -----------------------------------------------------------------------------
+# Variable: ingress_rules
+# Purpose: Defines a list of ingress rules for the security group.
+# Use Case: Specify granular inbound access policies for your resources. Each rule supports only one source type (CIDR, prefix list, or security group).
+# Example: Allow SSH from a specific IP, HTTP from a load balancer, or custom rules for microservices.
+# -----------------------------------------------------------------------------
 variable "ingress_rules" {
   /*
    * A list of ingress rules to apply to the security group.
@@ -102,6 +157,13 @@ variable "ingress_rules" {
   }
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: egress_rules
+# Purpose: Defines a list of egress rules for the security group.
+# Use Case: Specify granular outbound access policies for your resources. Each rule supports only one destination type (CIDR, prefix list, or security group).
+# Example: Allow outbound traffic only to a database subnet, or restrict access to specific external APIs.
+# -----------------------------------------------------------------------------
 variable "egress_rules" {
   /*
    * A list of egress rules to apply to the security group.
@@ -150,24 +212,48 @@ variable "egress_rules" {
 # Network Configurations
 #################################################################
 
+
+# -----------------------------------------------------------------------------
+# Variable: region
+# Purpose: Sets the AWS region for resource deployment.
+# Use Case: Override the default provider region for multi-region deployments.
+# -----------------------------------------------------------------------------
 variable "region" {
   description = "AWS region to deploy the instance. Default is the region configured in AWS provider."
   type        = string
   default     = ""
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: vpc_name
+# Purpose: Specifies the VPC for resource placement.
+# Use Case: Use to target a specific VPC by name, or leave blank for the default VPC.
+# -----------------------------------------------------------------------------
 variable "vpc_name" {
   description = "Name of the VPC where the instance will be deployed. If not provided, the default VPC will be used."
   type        = string
   default     = ""
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: subnet_type
+# Purpose: Selects the subnet type for resource deployment.
+# Use Case: Use to control network exposure and routing (e.g., public for internet-facing, private for internal workloads).
+# -----------------------------------------------------------------------------
 variable "subnet_type" {
   description = "Type of subnet for the instance. Options are 'public', 'private-with-nat', 'private-isolated'. Default is 'public'. Options are case-sensitive and need to be mentioned in Subnet name."
   type        = string
   default     = ""
 }
 
+
+# -----------------------------------------------------------------------------
+# Variable: availability_zone
+# Purpose: Sets the availability zone for resource placement.
+# Use Case: Use to control resource distribution for high availability or compliance.
+# -----------------------------------------------------------------------------
 variable "availability_zone" {
   description = "Availability zone for the EC2 instance. Default is the first availability zone of the selected VPC."
   type        = string
@@ -178,6 +264,12 @@ variable "availability_zone" {
 # Security Group Tagging
 #################################################################
 
+
+# -----------------------------------------------------------------------------
+# Variable: tags
+# Purpose: Custom tags for all resources created by the module.
+# Use Case: Use to add environment, owner, cost center, or other metadata for resource management and billing.
+# -----------------------------------------------------------------------------
 variable "tags" {
   description = "A map of tags to assign to the security group."
   type        = map(string)
