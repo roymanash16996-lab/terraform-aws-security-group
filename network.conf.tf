@@ -8,7 +8,7 @@
 # Purpose: Retrieves the AWS region for resource deployment, supporting multi-region logic.
 ################################################################################
 data "aws_region" "default" {
-  count = !var.security_group_id ? 1 : 0
+  count = var.security_group_id == null ? 1 : 0
 }
 
 

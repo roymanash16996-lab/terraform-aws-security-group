@@ -24,7 +24,7 @@ data "aws_caller_identity" "current" {}
 #================================================================================
 resource "aws_security_group" "this-dbc" {
 
-  count = !var.security_group_id && !var.use_name_prefix && !var.create_before_destroy ? 1 : 0
+  count = var.security_group_id == null && !var.use_name_prefix && !var.create_before_destroy ? 1 : 0
 
   name                   = var.name
   description            = var.description
@@ -61,7 +61,7 @@ resource "aws_security_group" "this-dbc" {
 #================================================================================
 resource "aws_security_group" "this-name-prefix-dbc" {
 
-  count = !var.security_group_id && var.use_name_prefix && !var.create_before_destroy ? 1 : 0
+  count = var.security_group_id == null && var.use_name_prefix && !var.create_before_destroy ? 1 : 0
 
   name_prefix            = "${var.name}-"
   description            = var.description
@@ -98,7 +98,7 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 #================================================================================
 resource "aws_security_group" "this-cbd" {
 
-  count = !var.security_group_id && !var.use_name_prefix && var.create_before_destroy ? 1 : 0
+  count = var.security_group_id == null && !var.use_name_prefix && var.create_before_destroy ? 1 : 0
 
   name                   = var.name
   description            = var.description
@@ -136,7 +136,7 @@ resource "aws_security_group" "this-cbd" {
 #================================================================================
 resource "aws_security_group" "this-name-prefix-cbd" {
 
-  count = !var.security_group_id && var.use_name_prefix && var.create_before_destroy ? 1 : 0
+  count = var.security_group_id == null && var.use_name_prefix && var.create_before_destroy ? 1 : 0
 
   name_prefix            = "${var.name}-"
   description            = var.description
