@@ -93,34 +93,27 @@ Specifies Terraform and AWS provider version requirements.
 
 ---
 
-## Variable Reference
 
-See `variables.tf` for all available input variables. Key variables include:
+## Variables
 
-### Creation Flags
-- `create` (bool): Master flag to enable/disable all resources
-- `create_security_group` (bool): Enable/disable security group creation
-- `create_before_destroy` (bool): Enable lifecycle for zero-downtime replacement
+| variable_name              | description                                                                                           | optional | required | type         |
+|----------------------------|-------------------------------------------------------------------------------------------------------|----------|---------|--------------|
+| create                     | Flag to create the security group or rules. If false, assumes SG is managed outside this module.      | Yes      | No      | bool         |
+| create_security_group      | Flag to create the security group. If false, assumes SG is managed outside this module.               | Yes      | No      | bool         |
+| create_before_destroy      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Yes      | No      | bool         |
+| use_name_prefix            | Use name_prefix for auto-generated SG names.                                                          | Yes      | No      | bool         |
+| name                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Yes      | No      | string       |
+| description                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Yes      | No      | string       |
+| revoke_rules_on_delete     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Yes      | No      | bool         |
+| security_group_id          | ID of an existing SG to use. If provided, no new SG is created.                                       | Yes      | No      | string       |
+| ingress_rules              | List of ingress rule objects. See Rule Schema below.                                                  | Yes      | No      | list(object) |
+| egress_rules               | List of egress rule objects. See Rule Schema below.                                                   | Yes      | No      | list(object) |
+| region                     | AWS region for deployment. Default is provider region.                                                | Yes      | No      | string       |
+| vpc_name                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Yes      | No      | string       |
+| subnet_type                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Yes      | No      | string       |
+| availability_zone          | Availability zone for the instance. Default is first AZ of selected VPC.                             | Yes      | No      | string       |
+| tags                       | Map of custom tags to assign to the security group.                                                  | Yes      | No      | map(string)  |
 
-### Security Group Settings
-- `use_name_prefix` (bool): Use name prefix for auto-generated names
-- `name` (string): Security group name
-- `description` (string): Security group description
-- `revoke_rules_on_delete` (bool): Revoke rules when deleting the group
-- `security_group_id` (string): Use an existing security group ID
-
-### Rule Lists
-- `ingress_rules` (list): List of ingress rule objects
-- `egress_rules` (list): List of egress rule objects
-
-### Network Settings
-- `region` (string): AWS region
-- `vpc_name` (string): VPC name
-- `subnet_type` (string): Subnet type
-- `availability_zone` (string): Availability zone
-
-### Tagging
-- `tags` (map): Custom tags for all resources
 
 ---
 
@@ -208,11 +201,14 @@ module "security_group" {
 
 ---
 
+
 ## Outputs
 
-- `security_group_id`: The ID of the security group (from local.this_sg_id)
-- `security_group_arn`: The ARN of the security group (from local.created_security_group.arn)
-- `security_group_name`: The name of the security group (from local.created_security_group.name)
+| output_name           | description                                 | type    |
+|-----------------------|---------------------------------------------|---------|
+| security_group_id     | The ID of the security group                | string  |
+| security_group_arn    | The ARN of the security group               | string  |
+| security_group_name   | The name of the security group              | string  |
 
 ---
 
@@ -238,4 +234,4 @@ module "security_group" {
 ---
 
 ## License
-MIT
+Self
