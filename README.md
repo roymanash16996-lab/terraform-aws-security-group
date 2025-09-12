@@ -282,4 +282,4 @@ module "security_group" {
 ---
 
 ## License
-Self
+Licensed by Self
