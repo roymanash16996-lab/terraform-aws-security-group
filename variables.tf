@@ -86,6 +86,20 @@ variable "ingress_rules" {
     description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
   }))
   default = []
+
+  validation {
+    condition = alltrue([
+      for rule in var.ingress_rules : (
+        (
+          (rule.cidr_ipv4 != "0.0.0.0/0" ? 1 : 0) +
+          (rule.cidr_ipv6 != "::/0" ? 1 : 0) +
+          (rule.prefix_list_id != "" ? 1 : 0) +
+          (rule.referenced_security_group_id != "" ? 1 : 0)
+        ) == 1
+      )
+    ])
+    error_message = "Each ingress rule must specify exactly one of: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. Multiple or none are not allowed."
+  }
 }
 
 variable "egress_rules" {
@@ -116,6 +130,20 @@ variable "egress_rules" {
     description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
   }))
   default = []
+
+  validation {
+    condition = alltrue([
+      for rule in var.egress_rules : (
+        (
+          (rule.cidr_ipv4 != "0.0.0.0/0" ? 1 : 0) +
+          (rule.cidr_ipv6 != "::/0" ? 1 : 0) +
+          (rule.prefix_list_id != "" ? 1 : 0) +
+          (rule.referenced_security_group_id != "" ? 1 : 0)
+        ) == 1
+      )
+    ])
+    error_message = "Each ingress rule must specify exactly one of: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. Multiple or none are not allowed."
+  }
 }
 
 #################################################################
