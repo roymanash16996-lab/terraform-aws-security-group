@@ -139,21 +139,21 @@ module "security_group" {
 
 ## Variables
 
-| variable_name              | description                                                                                           | optional | required | type         |
-|----------------------------|-------------------------------------------------------------------------------------------------------|----------|---------|--------------|
-| [create_before_destroy](#create_before_destroy)      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Yes      | No      | bool         |
-| [use_name_prefix](#use_name_prefix)            | Use name_prefix for auto-generated SG names.                                                          | Yes      | No      | bool         |
-| [name](#name)                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Yes      | No      | string       |
-| [description](#description)                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Yes      | No      | string       |
-| [revoke_rules_on_delete](#revoke_rules_on_delete)     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Yes      | No      | bool         |
-| [security_group_id](#security_group_id)          | ID of an existing SG to use. If provided, no new SG is created.                                       | Yes      | No      | string       |
-| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below.                                                  | Yes      | No      | list(object) |
-| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below.                                                   | Yes      | No      | list(object) |
-| [region](#region)                     | AWS region for deployment. Default is provider region.                                                | Yes      | No      | string       |
-| [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Yes      | No      | string       |
-| [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Yes      | No      | string       |
-| [availability_zone](#availability_zone)          | Availability zone for the instance. Default is first AZ of selected VPC.                             | Yes      | No      | string       |
-| [tags](#tags)                       | Map of custom tags to assign to the security group.                                                  | Yes      | No      | map(string)  |
+| variable_name              | description                                                                                           | required  | type         |
+|----------------------------|-------------------------------------------------------------------------------------------------------|-----------|--------------|
+| [create_before_destroy](#create_before_destroy)      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Optional  | bool         |
+| [use_name_prefix](#use_name_prefix)            | Use name_prefix for auto-generated SG names.                                                          | Optional  | bool         |
+| [name](#name)                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Optional  | string       |
+| [description](#description)                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Optional  | string       |
+| [revoke_rules_on_delete](#revoke_rules_on_delete)     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Optional  | bool         |
+| [security_group_id](#security_group_id)          | ID of an existing SG to use. If provided, no new SG is created.                                       | Optional  | string       |
+| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below.                                                  | Required  | list(object) |
+| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below.                                                   | Required  | list(object) |
+| [region](#region)                     | AWS region for deployment. Default is provider region.                                                | Optional  | string       |
+| [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Optional  | string       |
+| [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Optional  | string       |
+| [availability_zone](#availability_zone)          | Availability zone for the instance. Default is first AZ of selected VPC.                             | Optional  | string       |
+| [tags](#tags)                       | Map of custom tags to assign to the security group.                                                  | Optional  | map(string)  |
 
 ---
 
