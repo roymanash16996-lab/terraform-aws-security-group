@@ -211,16 +211,10 @@ variable "vpc_name" {
   default     = ""
 }
 
-
-# -----------------------------------------------------------------------------
-# Variable: subnet_type
-# Purpose: Selects the subnet type for resource deployment.
-# Use Case: Use to control network exposure and routing (e.g., public for internet-facing, private for internal workloads).
-# -----------------------------------------------------------------------------
-variable "subnet_type" {
-  description = "Type of subnet for the instance. Options are 'public', 'private-with-nat', 'private-isolated'. Default is 'public'. Options are case-sensitive and need to be mentioned in Subnet name."
+variable "vpc_id" {
+  description = "ID of the VPC where the instance will be deployed. If not provided, the VPC will be determined based on vpc_name or default VPC."
   type        = string
-  default     = ""
+  default     = ""  
 }
 
 
