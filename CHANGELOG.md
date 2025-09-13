@@ -1,5 +1,22 @@
 # Release Notes
 #
+## Version 0.0.5 (2025-09-14)
+### Changed
+- Security group naming logic updated:
+  - For standard creation (`create_before_destroy = false`), the security group name is set directly from `var.name`.
+  - For zero-downtime creation (`create_before_destroy = true`), the module uses `name_prefix = "${var.name}-"`, and AWS appends a random suffix for uniqueness (e.g., `my-sg-abc123`).
+  - No datetime suffix is appended by the module; documentation and comments now accurately reflect this logic.
+- README.md updated to clarify the naming logic and remove references to datetime suffixes.
+- Documentation and comments aligned with the actual implementation in `main.tf` and `locals.tf`.
+
+### Fixed
+- Removed outdated references to datetime suffix logic in documentation.
+- Ensured all code comments and outputs match the current resource naming behavior.
+
+### Notes
+- This release supersedes v0.0.4 and ensures the module documentation and codebase are fully synchronized regarding security group naming logic.
+
+#
 ## Version 0.0.4 (2025-09-14)
 ### Previous Logic
 - Resource selection in `locals.tf` relied on multiple flags (`use_name_prefix`, `create_before_destroy`, and user input), resulting in complex and sometimes ambiguous logic for choosing the correct security group resource and outputs.

@@ -302,7 +302,7 @@ Enable create_before_destroy lifecycle policy for zero-downtime replacement of t
 If true, uses a name prefix for the security group instead of a fixed name. Useful for auto-generating unique names.
 
 #### name
-The name of the security group. If omitted, Terraform will assign a random name.
+The name of the security group. If `create_before_destroy` is false, the name is set directly from `var.name`. If `create_before_destroy` is true, the module uses `name_prefix = "${var.name}-"`, and AWS appends a random suffix for uniqueness (e.g., `my-sg-abc123`). If omitted, Terraform will assign a random name.
 
 #### description
 Description of the security group. Defaults to 'Security Group managed by Terraform'.
@@ -347,6 +347,10 @@ The module uses local values to centralize and simplify resource selection, nami
 | `region`               | Determines the AWS region for resource deployment. Uses `var.region` if provided, otherwise defaults to the provider's region.         |
 | `datetime_suffix`      | Generates a unique suffix for resource naming, formatted as YYYYMMDDHHmmss.                         |
 | `sg_name`              | Computes the security group name, appending datetime suffix if `use_name_prefix` or `create_before_destroy` is true. |
+| `sg_name`              | Computes the security group name based on the following logic:
+  - If `create_before_destroy` is false, the security group name is set directly from `var.name`.
+  - If `create_before_destroy` is true, the module uses `name_prefix = "${var.name}-"`, and AWS appends a random suffix for uniqueness.
+  - This logic ensures unique names for zero-downtime replacement scenarios and prevents naming collisions. |
 
 
 These locals ensure that resources are created and referenced correctly, support zero-downtime replacement, and prevent naming collisions in multi-environment deployments.
