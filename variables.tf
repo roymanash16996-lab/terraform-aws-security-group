@@ -38,7 +38,7 @@ variable "use_name_prefix" {
 variable "name" {
   description = "The name of the security group. If omitted, Terraform will assign a random, unique name."
   type        = string
-  default     = null
+  default     = "terraform"
   validation {
     condition     = var.name == null || length(var.name) > 3
     error_message = "The security group name must be either omitted or longer than 3 characters."
