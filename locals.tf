@@ -44,5 +44,7 @@ locals {
   # How: Concatenates var.name with datetime_suffix, otherwise uses var.name directly
   # Rationale: Prevents naming collisions and supports zero-downtime replacement scenarios
   # Example: Used for CI/CD, ephemeral, or multi-environment deployments
-  sg_name = var.use_name_prefix || var.create_before_destroy ? "${var.name}-${local.datetime_suffix}" : var.name
+  sg_name = var.use_name_prefix || var.create_before_destroy ? "${var.name}-${local.datetime_suffix}" : (
+    var.name == null ? "created-by-terraform-${local.datetime_suffix}" : var.name
+    )
 }

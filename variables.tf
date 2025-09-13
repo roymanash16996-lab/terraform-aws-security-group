@@ -39,6 +39,10 @@ variable "name" {
   description = "The name of the security group. If omitted, Terraform will assign a random, unique name."
   type        = string
   default     = null
+  validation {
+    condition     = var.name == null || length(var.name) > 3
+    error_message = "The security group name must be either omitted or longer than 3 characters."
+  }
 }
 
 
@@ -78,6 +82,14 @@ variable "security_group_id" {
   description = "The ID of an existing security group to use. If provided, the module will not create a new security group."
   type        = string
   default     = null
+
+  validation {
+    condition     = var.security_group_id == null || (
+                      length(trimspace(var.security_group_id)) > 0 &&
+                      !contains(split(",", var.security_group_id), "")
+                    )
+    error_message = "security_group_id must be either null or a non-empty single security group ID without commas."
+  }
 }
 
 #################################################################
@@ -125,8 +137,8 @@ variable "ingress_rules" {
     condition = alltrue([
       for rule in var.ingress_rules : (
         (
-          (rule.cidr_ipv4 != "0.0.0.0/0" ? 1 : 0) +
-          (rule.cidr_ipv6 != "::/0" ? 1 : 0) +
+          (rule.cidr_ipv4 != "" ? 1 : 0) +
+          (rule.cidr_ipv6 != "" ? 1 : 0) +
           (rule.prefix_list_id != "" ? 1 : 0) +
           (rule.referenced_security_group_id != "" ? 1 : 0)
         ) == 1
@@ -177,8 +189,8 @@ variable "egress_rules" {
     condition = alltrue([
       for rule in var.egress_rules : (
         (
-          (rule.cidr_ipv4 != "0.0.0.0/0" ? 1 : 0) +
-          (rule.cidr_ipv6 != "::/0" ? 1 : 0) +
+          (rule.cidr_ipv4 != "" ? 1 : 0) +
+          (rule.cidr_ipv6 != "" ? 1 : 0) +
           (rule.prefix_list_id != "" ? 1 : 0) +
           (rule.referenced_security_group_id != "" ? 1 : 0)
         ) == 1
