@@ -96,11 +96,21 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 # How: Resource is instantiated with a fixed name from `var.name`. Lifecycle uses create_before_destroy for zero-downtime replacement.
 # Example: Used for production workloads requiring high availability and no downtime during SG updates.
 #================================================================================
+
+data "aws_security_group" "existing" {
+
+  count = var.security_group_id != null && var.create_before_destroy ? 1 : 0
+  
+  name = var.name
+  vpc_id = local.vpc_id
+
+}
+
 resource "aws_security_group" "this-cbd" {
 
   count = var.security_group_id == null && !var.use_name_prefix && var.create_before_destroy ? 1 : 0
 
-  name                   = var.name
+  name                   = local.sg_name
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
@@ -138,7 +148,7 @@ resource "aws_security_group" "this-name-prefix-cbd" {
 
   count = var.security_group_id == null && var.use_name_prefix && var.create_before_destroy ? 1 : 0
 
-  name_prefix            = "${var.name}-"
+  name_prefix            = "${local.sg_name}-"
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
