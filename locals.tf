@@ -27,7 +27,7 @@ locals {
 
   # Determines the VPC ID to use for security group creation
   # Use Case: Supports both default and user-specified VPCs for flexible network placement.
-  vpc_id = var.vpc_name == "" ? (var.vpc_id == "" ? data.aws_vpc.default[0].id : var.vpc_id) : data.aws_vpc.provided-vpc[0].id
+  vpc_id = var.vpc_id == "" ? data.aws_vpc.default[0].id : var.vpc_id
   # Note: If vpc_id is provided directly, it takes precedence over vpc_name-based lookups.
   # Determines the AWS region for resource deployment
   # Use Case: Allows explicit region selection or defaults to the provider's region for portability.

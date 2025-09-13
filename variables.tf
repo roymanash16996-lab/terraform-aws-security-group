@@ -210,26 +210,9 @@ variable "region" {
 # Purpose: Specifies the VPC for resource placement.
 # Use Case: Use to target a specific VPC by name, or leave blank for the default VPC.
 # -----------------------------------------------------------------------------
-variable "vpc_name" {
-  description = "Name of the VPC where the instance will be deployed. If not provided, the default VPC will be used."
-  type        = string
-  default     = ""
-}
 
 variable "vpc_id" {
   description = "ID of the VPC where the instance will be deployed. If not provided, the VPC will be determined based on vpc_name or default VPC."
-  type        = string
-  default     = ""
-}
-
-
-# -----------------------------------------------------------------------------
-# Variable: availability_zone
-# Purpose: Sets the availability zone for resource placement.
-# Use Case: Use to control resource distribution for high availability or compliance.
-# -----------------------------------------------------------------------------
-variable "availability_zone" {
-  description = "Availability zone for the EC2 instance. Default is the first availability zone of the selected VPC."
   type        = string
   default     = ""
 }

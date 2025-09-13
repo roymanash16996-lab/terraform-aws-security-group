@@ -201,30 +201,50 @@ Specifies Terraform and AWS provider version requirements.
 ## Example Usage
 ```hcl
 module "security_group" {
-  source = "git::https://github.com/roymanash16996-lab/terraform-aws-security-group.git?ref=<commit-hash>"
-
+  source                = "git::https://github.com/roymanash16996-lab/terraform-aws-security-group.git?ref=<commit-hash>"
   name                  = "my-sg"
   description           = "My security group"
-  vpc_name              = "my-vpc"
+  vpc_id                = "vpc-xxxxxxxx" # Replace with your VPC ID
   use_name_prefix       = false
   create_before_destroy = true
 
+  ingress_rules = [
+    {
       ip_protocol = "tcp"
       from_port   = 22
       to_port     = 22
       cidr_ipv4   = "0.0.0.0/0"
+      description = "Allow SSH"
+    },
     {
       ip_protocol = "tcp"
       from_port   = 80
       to_port     = 80
       cidr_ipv4   = "0.0.0.0/0"
       description = "Allow HTTP"
+    }
+  ]
+
+  egress_rules = [
+    {
+      ip_protocol = "-1"
+      from_port   = 0
+      to_port     = 0
+      cidr_ipv4   = "0.0.0.0/0"
       description = "Allow all outbound traffic"
     }
   ]
-  }
 }
 ```
+---
+
+### network.conf.tf
+
+Defines data sources for AWS region and VPC selection:
+
+- **data.aws_region.default**: Created only if `security_group_id` is not provided (i.e., a new security group is being created). Retrieves the AWS region for resource deployment, supporting multi-region logic and ensuring resources are placed in the correct region. Depends on `var.security_group_id` (count = 1 if null).
+- **data.aws_vpc.default**: Created only if `vpc_id` is not provided (empty string), indicating use of the default VPC. Retrieves the default VPC for resource placement in simple, legacy, or quick-start deployments where a specific VPC is not required. Depends on `var.vpc_id` (count = 1 if empty).
+- Region is set from `local.region` for consistency with other resources.
 
 ---
 
@@ -268,9 +288,7 @@ module "security_group" {
 | [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below. Each rule must specify exactly one mutually exclusive source type (CIDR, prefix list, or security group). | Optional  | list(object) | []            |
 | [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below. Each rule must specify exactly one mutually exclusive destination type (CIDR, prefix list, or security group). | Optional  | list(object) | []            |
 | [region](#region)                     | AWS region for deployment. Default is provider region.                                               | Optional  | string       | ""           |
-| [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                  | Optional  | string       | ""           |
-| [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.            | Optional  | string       | null          |
-| [availability_zone](#availability_zone)          | Availability zone for the instance. Default is first AZ of selected VPC.                            | Optional  | string       | null          |
+| [vpc_id](#vpc_id)                   | ID of the VPC for deployment. If not provided, the default VPC is used.                                  | Optional  | string       | ""           |
 | [tags](#tags)                       | Map of custom tags to assign to the security group.                                                  | Optional  | map(string)  | {}            |
 
 ---
@@ -307,14 +325,9 @@ If not provided or left empty, no egress rules will be created for the security 
 #### region
 AWS region for deployment. If not specified, uses the provider's default region.
 
-#### vpc_name
-Name of the VPC where the security group will be deployed. If not provided, the default VPC is used.
 
-#### subnet_type
-Type of subnet for the instance. Options are 'public', 'private-with-nat', or 'private-isolated'.
-
-#### availability_zone
-Availability zone for the instance. Defaults to the first AZ of the selected VPC.
+#### vpc_id
+ID of the VPC where the security group will be deployed. If not provided, the default VPC is used. Takes precedence over vpc_name-based lookups.
 
 #### tags
 Map of custom tags to assign to the security group and its rules. Useful for organization and cost allocation.
@@ -330,8 +343,8 @@ The module uses local values to centralize and simplify resource selection, nami
 |------------------------|-----------------------------------------------------------------------------------------------------|
 | `this_sg_id`           | Selects the correct security group ID for rule attachment. Uses created resource ID or user input.   |
 | `created_security_group`| Provides the created security group object for outputs and tagging, or null if using an external SG. |
-| `vpc_id`               | Determines the VPC ID for security group creation, supporting both default and user-specified VPCs.  |
-| `region`               | Determines the AWS region for resource deployment, using explicit input or provider default.         |
+| `vpc_id`               | Determines the VPC ID for security group creation. If `var.vpc_id` is provided, it takes precedence; otherwise, uses the default VPC.  |
+| `region`               | Determines the AWS region for resource deployment. Uses `var.region` if provided, otherwise defaults to the provider's region.         |
 | `datetime_suffix`      | Generates a unique suffix for resource naming, formatted as YYYYMMDDHHmmss.                         |
 | `sg_name`              | Computes the security group name, appending datetime suffix if `use_name_prefix` or `create_before_destroy` is true. |
 
@@ -367,7 +380,7 @@ Both `ingress_rules` and `egress_rules` are lists of objects with the following 
 | referenced_security_group_id| string  | ""               | Referenced security group ID (mutually exclusive; only one source/destination type allowed per rule) |
 | description                | string  | See variables.tf  | Rule description |
 
-**Note:** For each rule, only one of `cidr_ipv4`, `cidr_ipv6`, `prefix_list_id`, or `referenced_security_group_id` should be set.
+**Note:** For each rule, only one of `cidr_ipv4`, `cidr_ipv6`, `prefix_list_id`, or `referenced_security_group_id` should be set. Validation logic enforces this requirement and will raise an error if multiple or none are set.
 
 ---
 
