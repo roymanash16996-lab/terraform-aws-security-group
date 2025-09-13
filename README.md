@@ -1,6 +1,3 @@
-
-
-
 # AWS Security Group Terraform Module
 
 
@@ -18,10 +15,11 @@ This module provides a highly flexible and robust solution for managing AWS Secu
  [Requirements](#requirements)
  [Resources](#resources)
  [Variables](#variables)
+ [Locals](#locals)
+ [Outputs](#outputs)
  [Rule Schema](#rule-schema)
  [Lifecycle and Conditional Creation](#lifecycle-and-conditional-creation)
  [Tagging](#tagging)
- [Outputs](#outputs)
  [Troubleshooting](#troubleshooting)
  [License](#license)
 ## Usage
@@ -168,10 +166,11 @@ Defines all AWS resources, including:
 - **data.aws_caller_identity.current**: Always created. Used for tagging all resources with AWS account and user info.
 
 #### Security Group Resources
-- **aws_security_group.this-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is false. Uses a fixed name and does not use create_before_destroy lifecycle.
-- **aws_security_group.this-name-prefix-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is false. Uses a name prefix and does not use create_before_destroy lifecycle.
-- **aws_security_group.this-cbd**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is true. Uses a fixed name and create_before_destroy lifecycle for zero-downtime replacement.
-- **aws_security_group.this-name-prefix-cbd**: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is true. Uses a name prefix and create_before_destroy lifecycle for zero-downtime replacement.
+
+- **aws_security_group.this-dbc**: Created when `security_group_id` is not provided and `create_before_destroy` is false. Uses a name from `local.sg_name` (base name or with datetime suffix if `use_name_prefix` is true). No create_before_destroy lifecycle; downtime is possible during updates.
+- **aws_security_group.this-cbd**: Created when `security_group_id` is not provided and `create_before_destroy` is true. Uses a name from `local.sg_name` (includes datetime suffix for uniqueness if `use_name_prefix` or `create_before_destroy` is true). Uses create_before_destroy lifecycle for zero-downtime replacement.
+
+Note: Only these two resources are present in the codebase. The actual name used for the security group is determined by the logic in `locals.tf` (see `sg_name`).
 
 #### Security Group Rule Resources
 - **aws_vpc_security_group_ingress_rule.this**: Created for each item in `var.ingress_rules` when `local.this_sg_id` is set and the list is non-empty. Uses for_each to attach rules to the selected security group.
@@ -207,37 +206,22 @@ module "security_group" {
   name                  = "my-sg"
   description           = "My security group"
   vpc_name              = "my-vpc"
-  create_security_group = true
   use_name_prefix       = false
   create_before_destroy = true
 
-  ingress_rules = [
-    {
       ip_protocol = "tcp"
       from_port   = 22
       to_port     = 22
       cidr_ipv4   = "0.0.0.0/0"
-      description = "Allow SSH"
-    },
     {
       ip_protocol = "tcp"
       from_port   = 80
       to_port     = 80
       cidr_ipv4   = "0.0.0.0/0"
       description = "Allow HTTP"
-    }
-  ]
-
-  egress_rules = [
-    {
-      ip_protocol = "-1"
       description = "Allow all outbound traffic"
     }
   ]
-
-  tags = {
-    Environment = "dev"
-    Owner       = "your-name"
   }
 }
 ```
@@ -245,19 +229,16 @@ module "security_group" {
 ---
 
 ## Requirements
-
 - Terraform >= 1.5.7
 - AWS Provider >= 6.12.0
-- Null Provider >= 3.2.2 (required for null_resource validation)
+- Null Provider >= 3.2.2 (required for null_resource validation and abort logic)
 
 ---
 
 ## Resources
-### Security Group Resources
-- **aws_security_group.this-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is false. Uses a fixed name and does not use create_before_destroy lifecycle.
-- **aws_security_group.this-name-prefix-dbc**: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is false. Uses a name prefix and does not use create_before_destroy lifecycle.
-- **aws_security_group.this-cbd**: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is true. Uses a fixed name and create_before_destroy lifecycle for zero-downtime replacement.
-- **aws_security_group.this-name-prefix-cbd**: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is true. Uses a name prefix and create_before_destroy lifecycle for zero-downtime replacement.
+
+- **aws_security_group.this-dbc**: Created when `security_group_id` is not provided and `create_before_destroy` is false. Uses a name from `local.sg_name` (base name or with datetime suffix if `use_name_prefix` is true). No create_before_destroy lifecycle; downtime is possible during updates.
+- **aws_security_group.this-cbd**: Created when `security_group_id` is not provided and `create_before_destroy` is true. Uses a name from `local.sg_name` (includes datetime suffix for uniqueness if `use_name_prefix` or `create_before_destroy` is true). Uses create_before_destroy lifecycle for zero-downtime replacement.
 
 ### Security Group Rule Resources
 - **aws_vpc_security_group_ingress_rule.this**: Created for each item in `var.ingress_rules` when `local.this_sg_id` is set and the list is non-empty. Uses for_each to attach rules to the selected security group.
@@ -265,10 +246,10 @@ module "security_group" {
 
 ### Data Sources
 - **data.aws_caller_identity.current**: Always created. Used for tagging all resources with AWS account and user info.
-- **data.aws_region.default**: Created only if `security_group_id` is not provided (i.e., a new security group is being created). Depends on `var.security_group_id` (count = 1 if null). Retrieves the AWS region for resource deployment and VPC selection.
-- **data.aws_vpc.default**: Created only if both `vpc_name` and `vpc_id` are not provided (empty string). Depends on `var.vpc_name` and `var.vpc_id` (count = 1 if both are empty). Retrieves the default VPC for resource placement.
-- **data.aws_vpc.provided-vpc**: Created only if `vpc_name` is provided (not empty) and `vpc_id` is not set. Depends on `var.vpc_name` and `var.vpc_id` (count = 1 if name is set and id is empty). Retrieves a specific VPC by name.
-- **null_resource.abort_multiple_vpcs**: Created only if `vpc_name` is provided (not empty) and `vpc_id` is not set. Depends on `var.vpc_name` and `var.vpc_id`. Validates that only one VPC matches the provided name, aborts if multiple are found and instructs the user to provide a VPC ID instead.
+- **data.aws_region.default**: Created only if `security_group_id` is not provided. Retrieves the AWS region for resource deployment. Depends on `var.security_group_id` (count = 1 if null).
+- **data.aws_vpc.default**: Created only if `vpc_name` is not provided (empty string) and `vpc_id` is not set. Retrieves the default VPC for resource placement. Depends on `var.vpc_name` and `var.vpc_id` (count = 1 if both are empty).
+- **data.aws_vpc.provided-vpc**: Created only if `vpc_name` is provided (not empty) and `vpc_id` is not set. Retrieves a specific VPC by name. Depends on `var.vpc_name` and `var.vpc_id` (count = 1 if name is set and id is empty).
+- **null_resource.abort_multiple_vpcs**: Created only if `vpc_name` is provided (not empty) and `vpc_id` is not set. Validates that only one VPC matches the provided name, aborts if multiple are found.
 
 ---
 
@@ -278,18 +259,18 @@ module "security_group" {
 
 | variable_name              | description                                                                                           | required  | type         | default value |
 |----------------------------|-------------------------------------------------------------------------------------------------------|-----------|--------------|---------------|
-| [create_before_destroy](#create_before_destroy)      | Enable create_before_destroy lifecycle policy for zero-downtime replacement.                          | Optional  | bool         | true          |
-| [use_name_prefix](#use_name_prefix)            | Use name_prefix for auto-generated SG names.                                                          | Optional  | bool         | false         |
-| [name](#name)                       | The name of the security group. If omitted, Terraform assigns a random name.                          | Optional  | string       | null          |
-| [description](#description)                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                 | Optional  | string       | "Security Group managed by Terraform" |
-| [revoke_rules_on_delete](#revoke_rules_on_delete)     | Revoke all rules when the SG is deleted. Defaults to true.                                            | Optional  | bool         | true          |
-| [security_group_id](#security_group_id)          | ID of an existing SG to use. If provided, no new SG is created.                                       | Optional  | string       | null          |
-| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below.                                                  | Optional  | list(object) | []            |
-| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below.                                                   | Optional  | list(object) | []            |
-| [region](#region)                     | AWS region for deployment. Default is provider region.                                                | Optional  | string       | ""           |
-| [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                   | Optional  | string       | ""           |
-| [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.             | Optional  | string       | null          |
-| [availability_zone](#availability_zone)          | Availability zone for the instance. Default is first AZ of selected VPC.                             | Optional  | string       | null          |
+| [create_before_destroy](#create_before_destroy)      | Enable create_before_destroy lifecycle policy for zero-downtime replacement. If true, enables zero-downtime replacement; if false, downtime is possible during updates. | Optional  | bool         | true          |
+| [use_name_prefix](#use_name_prefix)            | Use name_prefix for auto-generated SG names. If true, sg_name includes a datetime suffix for uniqueness; if false, uses the base name. | Optional  | bool         | false         |
+| [name](#name)                       | The name of the security group. If omitted, Terraform assigns a random name.                         | Optional  | string       | null          |
+| [description](#description)                | Description of the security group. Defaults to 'Security Group managed by Terraform'.                | Optional  | string       | "Security Group managed by Terraform" |
+| [revoke_rules_on_delete](#revoke_rules_on_delete)     | Revoke all rules when the SG is deleted. Defaults to true.                                           | Optional  | bool         | true          |
+| [security_group_id](#security_group_id)          | ID of an existing SG to use. If provided, no new SG is created; rules are attached to the provided group. | Optional  | string       | null          |
+| [ingress_rules](#ingress_rules)              | List of ingress rule objects. See Rule Schema below. Each rule must specify exactly one mutually exclusive source type (CIDR, prefix list, or security group). | Optional  | list(object) | []            |
+| [egress_rules](#egress_rules)               | List of egress rule objects. See Rule Schema below. Each rule must specify exactly one mutually exclusive destination type (CIDR, prefix list, or security group). | Optional  | list(object) | []            |
+| [region](#region)                     | AWS region for deployment. Default is provider region.                                               | Optional  | string       | ""           |
+| [vpc_name](#vpc_name)                   | Name of the VPC for deployment. If not provided, uses default VPC.                                  | Optional  | string       | ""           |
+| [subnet_type](#subnet_type)                | Subnet type for the instance. Options: 'public', 'private-with-nat', 'private-isolated'.            | Optional  | string       | null          |
+| [availability_zone](#availability_zone)          | Availability zone for the instance. Default is first AZ of selected VPC.                            | Optional  | string       | null          |
 | [tags](#tags)                       | Map of custom tags to assign to the security group.                                                  | Optional  | map(string)  | {}            |
 
 ---
@@ -341,6 +322,36 @@ Map of custom tags to assign to the security group and its rules. Useful for org
 
 ---
 
+## Locals
+
+The module uses local values to centralize and simplify resource selection, naming, and output logic. These locals are defined in `locals.tf` and are critical for conditional resource creation and maintainability.
+
+| Local Name              | Purpose / Logic                                                                                       |
+|------------------------|-----------------------------------------------------------------------------------------------------|
+| `this_sg_id`           | Selects the correct security group ID for rule attachment. Uses created resource ID or user input.   |
+| `created_security_group`| Provides the created security group object for outputs and tagging, or null if using an external SG. |
+| `vpc_id`               | Determines the VPC ID for security group creation, supporting both default and user-specified VPCs.  |
+| `region`               | Determines the AWS region for resource deployment, using explicit input or provider default.         |
+| `datetime_suffix`      | Generates a unique suffix for resource naming, formatted as YYYYMMDDHHmmss.                         |
+| `sg_name`              | Computes the security group name, appending datetime suffix if `use_name_prefix` or `create_before_destroy` is true. |
+
+
+These locals ensure that resources are created and referenced correctly, support zero-downtime replacement, and prevent naming collisions in multi-environment deployments.
+
+## Outputs
+| output_name           | description                                 | type    |
+|-----------------------|---------------------------------------------|---------|
+| security_group_id     | The ID of the created or referenced security group. Always returns the selected security group ID, whether created by this module or provided externally. | string  |
+| security_group_arn    | The ARN of the created security group. Returns the ARN if a security group was created by this module; returns null if using an external SG. | string  |
+| security_group_name   | The name of the created security group. Returns the name if a security group was created by this module; returns null if using an external SG. | string  |
+
+---
+
+
+---
+
+
+
 ## Rule Schema
 
 Both `ingress_rules` and `egress_rules` are lists of objects with the following keys:
@@ -350,10 +361,10 @@ Both `ingress_rules` and `egress_rules` are lists of objects with the following 
 | ip_protocol                | string  | (required)        | Protocol (e.g., "tcp", "udp", "icmp", "-1") |
 | from_port                  | number  | 0                 | Start port |
 | to_port                    | number  | 0                 | End port |
-| cidr_ipv4                  | string  | "0.0.0.0/0"       | IPv4 CIDR block (mutually exclusive) |
-| cidr_ipv6                  | string  | "::/0"           | IPv6 CIDR block (mutually exclusive) |
-| prefix_list_id             | string  | ""               | AWS prefix list ID (mutually exclusive) |
-| referenced_security_group_id| string  | ""               | Referenced security group ID (mutually exclusive) |
+| cidr_ipv4                  | string  | "0.0.0.0/0"       | IPv4 CIDR block (mutually exclusive; only one source/destination type allowed per rule) |
+| cidr_ipv6                  | string  | "::/0"           | IPv6 CIDR block (mutually exclusive; only one source/destination type allowed per rule) |
+| prefix_list_id             | string  | ""               | AWS prefix list ID (mutually exclusive; only one source/destination type allowed per rule) |
+| referenced_security_group_id| string  | ""               | Referenced security group ID (mutually exclusive; only one source/destination type allowed per rule) |
 | description                | string  | See variables.tf  | Rule description |
 
 **Note:** For each rule, only one of `cidr_ipv4`, `cidr_ipv6`, `prefix_list_id`, or `referenced_security_group_id` should be set.
@@ -362,10 +373,13 @@ Both `ingress_rules` and `egress_rules` are lists of objects with the following 
 
 ## Lifecycle and Conditional Creation
 
-- Security group resources are created only if `security_group_id` is not provided.
-- The resource variant (`this-dbc`, `this-name-prefix-dbc`, `this-cbd`, `this-name-prefix-cbd`) is selected based on the values of `use_name_prefix` and `create_before_destroy`.
-- If `security_group_id` is provided, no new security group is created; rules are attached to the existing group.
-- Security group rule resources are created for each item in `ingress_rules` and `egress_rules` only when the corresponding list is non-empty and a security group ID is available.
++ Security group resources are created only if `security_group_id` is not provided.
++ The resource variant is selected based on the value of `create_before_destroy`:
+  - `aws_security_group.this-dbc`: Created when `create_before_destroy` is false.
+  - `aws_security_group.this-cbd`: Created when `create_before_destroy` is true.
++ The actual name used for the security group is determined by the logic in `locals.tf` (`sg_name`), which appends a datetime suffix if `use_name_prefix` or `create_before_destroy` is true.
++ If `security_group_id` is provided, no new security group is created; rules are attached to the existing group.
++ Security group rule resources are created for each item in `ingress_rules` and `egress_rules` only when the corresponding list is non-empty and a security group ID is available.
 
 ---
 
@@ -378,24 +392,6 @@ All resources and rules are tagged with:
 - `CreatedAt`: Timestamp of creation
 - `Name`: Security group name
 - Custom tags from `var.tags`
-
----
-
-## Outputs
-
-| output_name           | description                                 | type    |
-|-----------------------|---------------------------------------------|---------|
-| security_group_id     | The ID of the created or referenced security group. Use for referencing the security group in other modules or resources (e.g., EC2, ELB, Lambda). | string  |
-| security_group_arn    | The ARN of the created security group. Use for IAM policies, cross-account access, or compliance reporting. | string  |
-| security_group_name   | The name of the created security group. Use for logging, monitoring, or integration with systems that require the security group name. | string  |
-
-| output_name           | description                                 | type    |
-|-----------------------|---------------------------------------------|---------|
-| security_group_id     | The ID of the created or referenced security group                | string  |
-| security_group_arn    | The ARN of the created security group               | string  |
-| security_group_name   | The name of the created security group              | string  |
-
----
 
 ## Troubleshooting
 

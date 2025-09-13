@@ -11,20 +11,20 @@
 data "aws_caller_identity" "current" {}
 
 #################################################################
-# Security group with name
+# Security group resource (standard and create_before_destroy variants)
 #################################################################
 
-
-#================================================================================
+################################################################################
 # Resource: aws_security_group.this-dbc
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# When: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is false.
-# How: Resource is instantiated with a fixed name from `var.name`. Lifecycle does not use create_before_destroy.
-# Example: Used for legacy systems needing a static SG name, and downtime is acceptable during replacement.
-#================================================================================
+# When: Created when `security_group_id` is not provided and `create_before_destroy` is false.
+# How: Resource is instantiated with a name from `local.sg_name`, which is either the base name or includes a datetime suffix if name_prefix is used.
+# Lifecycle: Does not use create_before_destroy; downtime is possible during updates.
+# Example: Used for legacy systems or environments where downtime is acceptable.
+# Logic: The count is 1 if no external security_group_id is provided and create_before_destroy is false, otherwise 0.
+################################################################################
 resource "aws_security_group" "this-dbc" {
-
-  count = var.security_group_id == null ? 1 : 0
+  count = var.security_group_id == null && !var.create_before_destroy ? 1 : 0
 
   name                   = local.sg_name
   description            = var.description
@@ -47,20 +47,17 @@ resource "aws_security_group" "this-dbc" {
   )
 }
 
-#################################################################
-# Security group with create_before_destroy
-#################################################################
-
-#================================================================================
+################################################################################
 # Resource: aws_security_group.this-cbd
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# When: Created when `security_group_id` is not provided, `use_name_prefix` is false, and `create_before_destroy` is true.
-# How: Resource is instantiated with a fixed name from `var.name`. Lifecycle uses create_before_destroy for zero-downtime replacement.
-# Example: Used for production workloads requiring high availability and no downtime during SG updates.
-#================================================================================
+# When: Created when `security_group_id` is not provided and `create_before_destroy` is true.
+# How: Resource is instantiated with a name from `local.sg_name`, which includes a datetime suffix for uniqueness if name_prefix or create_before_destroy is used.
+# Lifecycle: Uses create_before_destroy for zero-downtime replacement during updates.
+# Example: Used for production workloads, blue/green deployments, or environments requiring high availability.
+# Logic: The count is 1 if no external security_group_id is provided and create_before_destroy is true, otherwise 0.
+################################################################################
 resource "aws_security_group" "this-cbd" {
-
-  count = var.security_group_id == null ? 1 : 0
+  count = var.security_group_id == null && var.create_before_destroy ? 1 : 0
 
   name                   = local.sg_name
   description            = var.description
@@ -81,19 +78,18 @@ resource "aws_security_group" "this-cbd" {
     },
     var.tags,
   )
-
 }
 
 #################################################################
 # Security group ingress rules
 #################################################################
 
-
 #================================================================================
 # Resource: aws_vpc_security_group_ingress_rule.this
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule
 # When: Created for each item in `var.ingress_rules` when `local.this_sg_id` is set and the list is non-empty.
-# How: Uses for_each to create a rule for each ingress object. Attaches to the selected security group.
+# How: Uses for_each with zipmap to create a rule for each ingress object, attaching to the selected security group.
+# Logic: Only creates rules if a security group ID is available and the ingress rules list is not empty.
 # Example: Allowing SSH from a specific IP, HTTP from a load balancer, or custom rules for microservices.
 #================================================================================
 resource "aws_vpc_security_group_ingress_rule" "this" {
@@ -129,12 +125,12 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 # Security group egress rules
 #################################################################
 
-
 #================================================================================
 # Resource: aws_vpc_security_group_egress_rule.this
 # Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule
 # When: Created for each item in `var.egress_rules` when `local.this_sg_id` is set and the list is non-empty.
-# How: Uses for_each to create a rule for each egress object. Attaches to the selected security group.
+# How: Uses for_each with zipmap to create a rule for each egress object, attaching to the selected security group.
+# Logic: Only creates rules if a security group ID is available and the egress rules list is not empty.
 # Example: Restricting outbound traffic to a database subnet, or allowing only specific external API endpoints.
 #================================================================================
 resource "aws_vpc_security_group_egress_rule" "this" {

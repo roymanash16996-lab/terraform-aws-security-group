@@ -66,10 +66,13 @@ variable "revoke_rules_on_delete" {
 }
 
 
+
 # -----------------------------------------------------------------------------
 # Variable: security_group_id
 # Purpose: Allows use of an externally managed security group.
 # Use Case: Provide when you want to manage rules for a security group created outside this module.
+# Logic: If set, no new security group is created; rules are attached to the provided group.
+# Default: null (module creates a new security group unless overridden).
 # -----------------------------------------------------------------------------
 variable "security_group_id" {
   description = "The ID of an existing security group to use. If provided, the module will not create a new security group."
@@ -117,6 +120,7 @@ variable "ingress_rules" {
   }))
   default = []
 
+  # Validation: Ensures each ingress rule specifies exactly one mutually exclusive source type (CIDR, prefix list, or security group).
   validation {
     condition = alltrue([
       for rule in var.ingress_rules : (
@@ -168,6 +172,7 @@ variable "egress_rules" {
   }))
   default = []
 
+  # Validation: Ensures each egress rule specifies exactly one mutually exclusive destination type (CIDR, prefix list, or security group).
   validation {
     condition = alltrue([
       for rule in var.egress_rules : (
@@ -179,7 +184,7 @@ variable "egress_rules" {
         ) == 1
       )
     ])
-    error_message = "Each ingress rule must specify exactly one of: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. Multiple or none are not allowed."
+    error_message = "Each egress rule must specify exactly one of: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. Multiple or none are not allowed."
   }
 }
 
