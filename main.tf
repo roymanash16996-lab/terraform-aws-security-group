@@ -40,7 +40,7 @@ resource "aws_security_group" "this-dbc" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = timestamp()
+      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
       "Name"      = var.name
     },
     var.tags,
@@ -73,7 +73,7 @@ resource "aws_security_group" "this-cbd" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = timestamp()
+      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
       "Name"      = var.name
     },
     var.tags,
@@ -100,8 +100,8 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
 
   security_group_id = local.this_sg_id
   ip_protocol       = each.value.ip_protocol
-  from_port         = lookup(each.value, "from_port", 0)
-  to_port           = lookup(each.value, "to_port", 0)
+  from_port         = lookup(each.value, "from_port")
+  to_port           = lookup(each.value, "to_port")
 
   cidr_ipv4                    = contains(keys(each.value), "cidr_ipv4") && each.value.cidr_ipv4 != "" ? each.value.cidr_ipv4 : null
   cidr_ipv6                    = contains(keys(each.value), "cidr_ipv6") && each.value.cidr_ipv6 != "" ? each.value.cidr_ipv6 : null
@@ -115,7 +115,7 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = timestamp()
+      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
     },
     var.tags,
   )
@@ -141,8 +141,8 @@ resource "aws_vpc_security_group_egress_rule" "this" {
 
   security_group_id = local.this_sg_id
   ip_protocol       = each.value.ip_protocol
-  from_port         = lookup(each.value, "from_port", 0)
-  to_port           = lookup(each.value, "to_port", 0)
+  from_port         = lookup(each.value, "from_port")
+  to_port           = lookup(each.value, "to_port")
 
   cidr_ipv4                    = contains(keys(each.value), "cidr_ipv4") && each.value.cidr_ipv4 != "" ? each.value.cidr_ipv4 : null
   cidr_ipv6                    = contains(keys(each.value), "cidr_ipv6") && each.value.cidr_ipv6 != "" ? each.value.cidr_ipv6 : null
@@ -156,9 +156,8 @@ resource "aws_vpc_security_group_egress_rule" "this" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = timestamp()
+      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
     },
     var.tags,
   )
 }
-

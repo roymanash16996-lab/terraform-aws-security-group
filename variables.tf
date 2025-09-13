@@ -122,8 +122,8 @@ variable "ingress_rules" {
   description = "A list of ingress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description. For each rule, provide only one of the following mutually exclusive attributes: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. By default, allows all inbound traffic. If you want to restrict inbound traffic, provide specific rules. If you want to remove all inbound traffic, provide an empty list."
   type = list(object({
     ip_protocol                  = string
-    from_port                    = optional(number, 0)
-    to_port                      = optional(number, 0)
+    from_port                    = optional(number, )
+    to_port                      = optional(number, )
     cidr_ipv4                    = optional(string, "")
     cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
@@ -174,8 +174,8 @@ variable "egress_rules" {
   description = "A list of egress rules to apply to the security group. Each rule should be a map with the following keys: ip_protocol, from_port, to_port, cidr_ipv4, cidr_ipv6, prefix_list_id, referenced_security_group_id, description. For each rule, provide only one of the following mutually exclusive attributes: cidr_ipv4, cidr_ipv6, prefix_list_id, or referenced_security_group_id. By default, allows all outbound traffic. If you want to restrict outbound traffic, provide specific rules. If you want to remove all outbound traffic, provide an empty list."
   type = list(object({
     ip_protocol                  = string
-    from_port                    = optional(number, 0)
-    to_port                      = optional(number, 0)
+    from_port                    = optional(number, )
+    to_port                      = optional(number, )
     cidr_ipv4                    = optional(string, "")
     cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
