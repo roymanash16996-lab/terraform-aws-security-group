@@ -214,7 +214,7 @@ variable "vpc_name" {
 variable "vpc_id" {
   description = "ID of the VPC where the instance will be deployed. If not provided, the VPC will be determined based on vpc_name or default VPC."
   type        = string
-  default     = ""  
+  default     = ""
 }
 
 

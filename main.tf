@@ -98,9 +98,9 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 #================================================================================
 data "aws_security_group" "existing" {
 
-  count   = var.security_group_id != null && var.create_before_destroy ? 1 : 0
-  name    = var.name
-  vpc_id  = local.vpc_id
+  count  = var.security_group_id == null && var.create_before_destroy ? 1 : 0
+  name   = var.name
+  vpc_id = local.vpc_id
 
 }
 
@@ -189,22 +189,22 @@ resource "aws_security_group" "this-name-prefix-cbd" {
 #================================================================================
 resource "aws_vpc_security_group_ingress_rule" "this" {
   for_each = local.this_sg_id != null && length(var.ingress_rules) > 0 ? zipmap(
-    [for idx in range(length(var.ingress_rules)) : tostring(idx)], 
+    [for idx in range(length(var.ingress_rules)) : tostring(idx)],
     var.ingress_rules
   ) : {}
 
-  security_group_id            = local.this_sg_id
-  ip_protocol                  = each.value.ip_protocol
-  from_port                    = lookup(each.value, "from_port", 0)
-  to_port                      = lookup(each.value, "to_port", 0)
+  security_group_id = local.this_sg_id
+  ip_protocol       = each.value.ip_protocol
+  from_port         = lookup(each.value, "from_port", 0)
+  to_port           = lookup(each.value, "to_port", 0)
 
-  cidr_ipv4                 = contains(keys(each.value), "cidr_ipv4") && each.value.cidr_ipv4 != "" ? each.value.cidr_ipv4 : null
-  cidr_ipv6                 = contains(keys(each.value), "cidr_ipv6") && each.value.cidr_ipv6 != "" ? each.value.cidr_ipv6 : null
-  prefix_list_id            = contains(keys(each.value), "prefix_list_id") && each.value.prefix_list_id != "" ? each.value.prefix_list_id : null
+  cidr_ipv4                    = contains(keys(each.value), "cidr_ipv4") && each.value.cidr_ipv4 != "" ? each.value.cidr_ipv4 : null
+  cidr_ipv6                    = contains(keys(each.value), "cidr_ipv6") && each.value.cidr_ipv6 != "" ? each.value.cidr_ipv6 : null
+  prefix_list_id               = contains(keys(each.value), "prefix_list_id") && each.value.prefix_list_id != "" ? each.value.prefix_list_id : null
   referenced_security_group_id = contains(keys(each.value), "referenced_security_group_id") && each.value.referenced_security_group_id != "" ? each.value.referenced_security_group_id : null
 
-  description                  = lookup(each.value, "description", "Default ingress rule to allow all traffic within the security group")
-  region                       = local.region
+  description = lookup(each.value, "description", "Default ingress rule to allow all traffic within the security group")
+  region      = local.region
 
   tags = merge(
     {
@@ -239,9 +239,9 @@ resource "aws_vpc_security_group_egress_rule" "this" {
   from_port         = lookup(each.value, "from_port", 0)
   to_port           = lookup(each.value, "to_port", 0)
 
-  cidr_ipv4                 = contains(keys(each.value), "cidr_ipv4") && each.value.cidr_ipv4 != "" ? each.value.cidr_ipv4 : null
-  cidr_ipv6                 = contains(keys(each.value), "cidr_ipv6") && each.value.cidr_ipv6 != "" ? each.value.cidr_ipv6 : null
-  prefix_list_id            = contains(keys(each.value), "prefix_list_id") && each.value.prefix_list_id != "" ? each.value.prefix_list_id : null
+  cidr_ipv4                    = contains(keys(each.value), "cidr_ipv4") && each.value.cidr_ipv4 != "" ? each.value.cidr_ipv4 : null
+  cidr_ipv6                    = contains(keys(each.value), "cidr_ipv6") && each.value.cidr_ipv6 != "" ? each.value.cidr_ipv6 : null
+  prefix_list_id               = contains(keys(each.value), "prefix_list_id") && each.value.prefix_list_id != "" ? each.value.prefix_list_id : null
   referenced_security_group_id = contains(keys(each.value), "referenced_security_group_id") && each.value.referenced_security_group_id != "" ? each.value.referenced_security_group_id : null
 
   description = lookup(each.value, "description", "Default egress rule to allow all traffic")
