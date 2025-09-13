@@ -248,6 +248,7 @@ module "security_group" {
 
 - Terraform >= 1.5.7
 - AWS Provider >= 6.12.0
+- Null Provider >= 3.2.2 (required for null_resource validation)
 
 ---
 
