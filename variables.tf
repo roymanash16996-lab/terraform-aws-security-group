@@ -128,7 +128,7 @@ variable "ingress_rules" {
     cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
     referenced_security_group_id = optional(string, "")
-    description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
+    description                  = optional(string, "Default ingress rule description")
   }))
   default = []
 
@@ -180,7 +180,7 @@ variable "egress_rules" {
     cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
     referenced_security_group_id = optional(string, "")
-    description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
+    description                  = optional(string, "Default egress rule description")
   }))
   default = []
 
