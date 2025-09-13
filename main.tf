@@ -88,6 +88,21 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 # Security group with create_before_destroy and name
 #################################################################
 
+#================================================================================
+# Data Source: aws_security_group.existing
+# Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group
+# When: Created only if `security_group_id` is provided and `create_before_destroy` is true.
+# How: Instantiated as a data source to reference an existing security group by name and VPC ID.
+# Rationale: Used to fetch details of an existing security group for lifecycle operations when zero-downtime replacement is required.
+# Example: Enables referencing an existing SG for updates or rule attachment without creating a new resource.
+#================================================================================
+data "aws_security_group" "existing" {
+
+  count   = var.security_group_id != null && var.create_before_destroy ? 1 : 0
+  name    = var.name
+  vpc_id  = local.vpc_id
+
+}
 
 #================================================================================
 # Resource: aws_security_group.this-cbd
@@ -96,16 +111,6 @@ resource "aws_security_group" "this-name-prefix-dbc" {
 # How: Resource is instantiated with a fixed name from `var.name`. Lifecycle uses create_before_destroy for zero-downtime replacement.
 # Example: Used for production workloads requiring high availability and no downtime during SG updates.
 #================================================================================
-
-data "aws_security_group" "existing" {
-
-  count = var.security_group_id != null && var.create_before_destroy ? 1 : 0
-  
-  name = var.name
-  vpc_id = local.vpc_id
-
-}
-
 resource "aws_security_group" "this-cbd" {
 
   count = var.security_group_id == null && !var.use_name_prefix && var.create_before_destroy ? 1 : 0

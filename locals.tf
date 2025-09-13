@@ -32,5 +32,5 @@ locals {
   # Use Case: Allows explicit region selection or defaults to the provider's region for portability.
   region = var.region != "" ? var.region : data.aws_region.default[0].region
 
-  sg_name = data.aws_security_group.existing.id != "" ? "cbd-${var.name}" : var.name
+  sg_name = data.aws_security_group.existing[0].id != "" ? "cbd-${var.name}" : var.name
 }
