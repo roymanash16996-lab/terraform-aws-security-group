@@ -24,9 +24,9 @@ data "aws_caller_identity" "current" {}
 #================================================================================
 resource "aws_security_group" "this-dbc" {
 
-  count = var.security_group_id == null && !var.use_name_prefix && !var.create_before_destroy ? 1 : 0
+  count = var.security_group_id == null ? 1 : 0
 
-  name                   = var.name
+  name                   = local.sg_name
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
@@ -48,61 +48,8 @@ resource "aws_security_group" "this-dbc" {
 }
 
 #################################################################
-# Security group with name_prefix
+# Security group with create_before_destroy
 #################################################################
-
-
-#================================================================================
-# Resource: aws_security_group.this-name-prefix-dbc
-# Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# When: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is false.
-# How: Resource is instantiated with a name prefix from `var.name`. Lifecycle does not use create_before_destroy.
-# Example: Used for multi-environment deployments to avoid naming collisions.
-#================================================================================
-resource "aws_security_group" "this-name-prefix-dbc" {
-
-  count = var.security_group_id == null && var.use_name_prefix && !var.create_before_destroy ? 1 : 0
-
-  name_prefix            = "${var.name}-"
-  description            = var.description
-  revoke_rules_on_delete = var.revoke_rules_on_delete
-
-  vpc_id = local.vpc_id
-
-  lifecycle {
-    create_before_destroy = false
-  }
-
-  tags = merge(
-    {
-      "CreatedBy" = data.aws_caller_identity.current.arn
-      "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = timestamp()
-      "Name"      = var.name
-    },
-    var.tags,
-  )
-}
-
-#################################################################
-# Security group with create_before_destroy and name
-#################################################################
-
-#================================================================================
-# Data Source: aws_security_group.existing
-# Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group
-# When: Created only if `security_group_id` is provided and `create_before_destroy` is true.
-# How: Instantiated as a data source to reference an existing security group by name and VPC ID.
-# Rationale: Used to fetch details of an existing security group for lifecycle operations when zero-downtime replacement is required.
-# Example: Enables referencing an existing SG for updates or rule attachment without creating a new resource.
-#================================================================================
-data "aws_security_group" "existing" {
-
-  count  = var.security_group_id == null && var.create_before_destroy ? 1 : 0
-  name   = var.name
-  vpc_id = local.vpc_id
-
-}
 
 #================================================================================
 # Resource: aws_security_group.this-cbd
@@ -113,47 +60,9 @@ data "aws_security_group" "existing" {
 #================================================================================
 resource "aws_security_group" "this-cbd" {
 
-  count = var.security_group_id == null && !var.use_name_prefix && var.create_before_destroy ? 1 : 0
+  count = var.security_group_id == null ? 1 : 0
 
   name                   = local.sg_name
-  description            = var.description
-  revoke_rules_on_delete = var.revoke_rules_on_delete
-
-  vpc_id = local.vpc_id
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = merge(
-    {
-      "CreatedBy" = data.aws_caller_identity.current.arn
-      "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = timestamp()
-      "Name"      = var.name
-    },
-    var.tags,
-  )
-
-}
-
-#################################################################
-# Security group with create_before_destroy and name_prefix
-#################################################################
-
-
-#================================================================================
-# Resource: aws_security_group.this-name-prefix-cbd
-# Documentation: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
-# When: Created when `security_group_id` is not provided, `use_name_prefix` is true, and `create_before_destroy` is true.
-# How: Resource is instantiated with a name prefix from `var.name`. Lifecycle uses create_before_destroy for zero-downtime replacement.
-# Example: Used for CI/CD pipelines, ephemeral environments, or feature branch deployments.
-#================================================================================
-resource "aws_security_group" "this-name-prefix-cbd" {
-
-  count = var.security_group_id == null && var.use_name_prefix && var.create_before_destroy ? 1 : 0
-
-  name_prefix            = "${local.sg_name}-"
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
