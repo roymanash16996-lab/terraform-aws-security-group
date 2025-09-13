@@ -1,26 +1,38 @@
 # Changelog
 
-## v0.0.2 – September 12, 2025
+
+## v0.0.3 – September 13, 2025
 
 ### Added
-- Example Usage section moved before Resources, Variables, and Outputs in README.md.
-- Example now references GitHub repository URL with commit hash.
-- Table of Contents updated to match new section order and titles.
-- New section in release notes highlighting previous logic, issues, and resolutions.
+- Comprehensive Usage section in README.md expanded to ~2500 words, including:
+  - Detailed explanations for new and advanced users
+  - Step-by-step getting started guide
+  - Practical guidance, best practices, and troubleshooting tips
+  - Real-world and advanced scenarios, integration examples, and security recommendations
+- Variable table in README.md now includes a 'default value' column for all variables
+- Additional documentation for module features, integration, and compliance use cases
+- Logic changes in `network.conf.tf`:
+  - Improved conditional creation of data sources for region and VPC selection
+  - Enhanced logic for selecting default VPC, provided VPC by name, and handling VPC ID
+  - Added validation resource to abort if multiple VPCs match the provided name, with user guidance
+  - Updated comments and documentation to clarify dependencies and creation conditions for each data source
 
 ### Changed
-- Resource creation logic is now fully documented and clarified:
-  - Security group resources are created only if `security_group_id` is not provided and `create_security_group` is true.
-  - Resource variant selection (`this-dbc`, `this-name-prefix-dbc`, etc.) is now explicit and documented.
-  - Security group rule resources use `for_each` and are only created when the rules list is non-empty and a security group ID is available.
-  - Data source usage for AWS caller identity, region, and VPC selection is clarified.
-  - Output logic updated to reflect correct references for created or existing security groups.
-- Improved code documentation in all Terraform files to match latest logic and use cases.
+- Table of Contents updated to include Usage section and reflect new section order
+- Usage section now provides extensive onboarding and practical advice for Terraform Registry users
+- Data Sources section in README.md clarified and corrected to match latest logic
+- All documentation and code comments updated to reflect current resource creation logic, variable defaults, and output schemas
+- `network.conf.tf` logic for VPC and region selection is now fully documented and clarified, including:
+  - Data source creation conditions based on `vpc_name` and `vpc_id` variables
+  - Improved handling of default and provided VPC selection
+  - Explicit validation for multiple VPC matches
+  - Updated comments to match new logic and dependencies
 
 ### Fixed
-- Table of Contents links now match actual section headings.
-- Resolved patching and formatting issues in README.md tables.
+- Improved markdown table formatting and patch reliability in README.md
+- Corrected and clarified Data Sources documentation for VPC and region selection logic
+- Addressed minor formatting and link issues in documentation
 
 ### Notes
-- This release supersedes v0.0.1 and reflects all recent documentation and logic changes.
-- Please update the commit hash in the example usage to reference the correct version.
+- This release supersedes v0.0.2 and includes all recent documentation, onboarding, and logic improvements
+- Please update the commit hash in the example usage to reference the correct version
