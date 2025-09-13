@@ -33,18 +33,4 @@ locals {
   # Use Case: Allows explicit region selection or defaults to the provider's region for portability.
   region = var.region != "" ? var.region : data.aws_region.default[0].region
 
-  # Generates a unique datetime suffix for resource naming
-  # Purpose: Ensures unique resource names for environments where name_prefix or create_before_destroy is used
-  # How: Uses the current timestamp formatted as YYYYMMDDHHmmss
-  # Example: "my-sg-20250914123045"
-  datetime_suffix = formatdate("YYYYMMDDHHmmss", timestamp())
-
-  # Computes the security group name based on naming strategy
-  # When: If use_name_prefix or create_before_destroy is true, appends datetime suffix for uniqueness
-  # How: Concatenates var.name with datetime_suffix, otherwise uses var.name directly
-  # Rationale: Prevents naming collisions and supports zero-downtime replacement scenarios
-  # Example: Used for CI/CD, ephemeral, or multi-environment deployments
-  sg_name = var.use_name_prefix || var.create_before_destroy ? "${var.name}-${local.datetime_suffix}" : (
-    var.name == null ? "created-by-terraform-${local.datetime_suffix}" : var.name
-    )
 }

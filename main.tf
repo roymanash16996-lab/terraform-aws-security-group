@@ -26,7 +26,7 @@ data "aws_caller_identity" "current" {}
 resource "aws_security_group" "this-dbc" {
   count = var.security_group_id == null && !var.create_before_destroy ? 1 : 0
 
-  name                   = local.sg_name
+  name                   = var.name
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
@@ -59,7 +59,7 @@ resource "aws_security_group" "this-dbc" {
 resource "aws_security_group" "this-cbd" {
   count = var.security_group_id == null && var.create_before_destroy ? 1 : 0
 
-  name                   = local.sg_name
+  name_prefix = "${var.name}-" # Trailing dash for readability with random suffix
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
@@ -161,3 +161,4 @@ resource "aws_vpc_security_group_egress_rule" "this" {
     var.tags,
   )
 }
+
