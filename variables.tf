@@ -124,8 +124,8 @@ variable "ingress_rules" {
     ip_protocol                  = string
     from_port                    = optional(number, 0)
     to_port                      = optional(number, 0)
-    cidr_ipv4                    = optional(string, "0.0.0.0/0")
-    cidr_ipv6                    = optional(string, "::/0")
+    cidr_ipv4                    = optional(string, "")
+    cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
     referenced_security_group_id = optional(string, "")
     description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
@@ -176,8 +176,8 @@ variable "egress_rules" {
     ip_protocol                  = string
     from_port                    = optional(number, 0)
     to_port                      = optional(number, 0)
-    cidr_ipv4                    = optional(string, "0.0.0.0/0")
-    cidr_ipv6                    = optional(string, "::/0")
+    cidr_ipv4                    = optional(string, "")
+    cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
     referenced_security_group_id = optional(string, "")
     description                  = optional(string, "Default ingress rule to allow all traffic within the security group")
