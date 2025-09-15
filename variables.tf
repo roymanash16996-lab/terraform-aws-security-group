@@ -30,6 +30,18 @@ variable "use_name_prefix" {
 }
 
 
+variable "allow_all_egress_ipv4" {
+  description = "Flag to allow all outbound IPv4 traffic. Defaults to true."
+  type        = bool
+  default     = true  
+}
+
+variable "allow_all_egress_ipv6" {
+  description = "Flag to allow all outbound IPv6 traffic. Defaults to false."
+  type        = bool
+  default     = false  
+}
+
 # -----------------------------------------------------------------------------
 # Variable: name
 # Purpose: Sets the name of the security group.
@@ -124,7 +136,7 @@ variable "ingress_rules" {
     ip_protocol                  = string
     from_port                    = optional(number, )
     to_port                      = optional(number, )
-    cidr_ipv4                    = optional(string, "")
+    cidr_ipv4                    = optional(string, "0.0.0.0/0")
     cidr_ipv6                    = optional(string, "")
     prefix_list_id               = optional(string, "")
     referenced_security_group_id = optional(string, "")
