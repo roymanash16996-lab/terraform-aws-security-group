@@ -98,7 +98,8 @@ variable "security_group_id" {
   validation {
     condition = var.security_group_id == null || (
       length(trimspace(var.security_group_id)) > 0 &&
-      !contains(split(",", var.security_group_id), "")
+      !contains(split(",", var.security_group_id), "") &&
+      !can(regex(",", var.security_group_id))
     )
     error_message = "security_group_id must be either null or a non-empty single security group ID without commas."
   }
