@@ -161,7 +161,7 @@ resource "aws_vpc_security_group_egress_rule" "this" {
 
 resource "aws_vpc_security_group_egress_rule" "allow-all-ipv4" {
 
-  count = var.egress_rules == [] && allow_all_egress_ipv4 && local.this_sg_id != null ? 1 : 0
+  count = var.egress_rules == [] && var.allow_all_egress_ipv4 && local.this_sg_id != null ? 1 : 0
 
   security_group_id = local.this_sg_id
   ip_protocol       = "-1"
@@ -180,7 +180,7 @@ resource "aws_vpc_security_group_egress_rule" "allow-all-ipv4" {
 
 resource "aws_vpc_security_group_egress_rule" "allow-all-ipv6" {
 
-  count = var.egress_rules == [] && allow_all_egress_ipv6 && local.this_sg_id != null ? 1 : 0
+  count = var.egress_rules == [] && var.allow_all_egress_ipv6 && local.this_sg_id != null ? 1 : 0
 
   security_group_id = local.this_sg_id
   ip_protocol       = "-1"
