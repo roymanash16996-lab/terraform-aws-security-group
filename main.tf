@@ -40,7 +40,6 @@ resource "aws_security_group" "this-dbc" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
       "Name"      = var.name
     },
     var.tags,
@@ -59,7 +58,7 @@ resource "aws_security_group" "this-dbc" {
 resource "aws_security_group" "this-cbd" {
   count = var.security_group_id == null && var.create_before_destroy ? 1 : 0
 
-  name_prefix = "${var.name}-" # Trailing dash for readability with random suffix
+  name_prefix            = "${var.name}-" # Trailing dash for readability with random suffix
   description            = var.description
   revoke_rules_on_delete = var.revoke_rules_on_delete
 
@@ -73,7 +72,6 @@ resource "aws_security_group" "this-cbd" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
       "Name"      = var.name
     },
     var.tags,
@@ -115,7 +113,6 @@ resource "aws_vpc_security_group_ingress_rule" "this" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
     },
     var.tags,
   )
@@ -156,7 +153,6 @@ resource "aws_vpc_security_group_egress_rule" "this" {
     {
       "CreatedBy" = data.aws_caller_identity.current.arn
       "Owner"     = data.aws_caller_identity.current.account_id
-      "CreatedAt" = formatdate("DD-MM-YYYY", timestamp())
     },
     var.tags,
   )
